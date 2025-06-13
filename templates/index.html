@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Production Management Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <img src="{{ url_for('static', filename='images/logo_FINAL.svg') }}" alt="Company Logo" class="dashboard-logo">
+        <h1>Production Management Dashboard</h1>
+        <p>Welcome to your centralized production insights.</p>
+    </header>
+
+    <main class="dashboard-main">
+        <section class="dashboard-section">
+            <h2>Master Data</h2>
+            <div class="button-grid">
+                <a href="/employees" class="dashboard-button">
+                    <i class="fas fa-users icon"></i>
+                    <span>Manage Employees</span>
+                </a>
+                <a href="/positions" class="dashboard-button">
+                    <i class="fas fa-briefcase icon"></i>
+                    <span>Manage Positions</span>
+                </a>
+                <a href="/work-areas" class="dashboard-button">
+                    <i class="fas fa-industry icon"></i>
+                    <span>Manage Work Areas</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="dashboard-section">
+            <h2>Production Operations</h2>
+            <div class="button-grid">
+                <a href="/production-weeks" class="dashboard-button">
+                    <i class="fas fa-calendar-alt icon"></i>
+                    <span>Production Schedules</span>
+                </a>
+                <a href="/daily-hours-entry" class="dashboard-button">
+                    <i class="fas fa-clock icon"></i>
+                    <span>Daily Hours Entry</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="dashboard-section">
+            <h2>Reports & Analytics</h2>
+            <div class="button-grid">
+                <a href="/reports" class="dashboard-button">
+                    <i class="fas fa-chart-line icon"></i>
+                    <span>Weekly Overview</span>
+                </a>
+                <a href="/monthly-work-area-hours-report" class="dashboard-button">
+                    <i class="fas fa-chart-bar icon"></i>
+                    <span>Monthly Hours</span>
+                </a>
+            </div>
+        </section>
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Weekly Performance Reports{% endblock %}
+
+{% block page_title %}Weekly Performance Reports{% endblock %}
+
+{% block content %}
+    <h2>Weekly Overview</h2>
+    <table id="reportsTable" border="1">
+        <thead>
+            <tr>
+                <th rowspan="2">Reporting Week</th>
+                <th colspan="4">Dollars Per Hour ($/HR)</th>
+                <th colspan="4">Boxes Built</th>
+                <th colspan="4">Total Production Hours</th>
+            </tr>
+            <tr>
+                <th>Forecast</th>
+                <th>Actual</th>
+                <th>Var ($)</th>
+                <th>Var (%)</th>
+                <th>Forecast</th>
+                <th>Actual</th>
+                <th>Var (#)</th>
+                <th>Var (%)</th>
+                <th>Forecast</th>
+                <th>Actual</th>
+                <th>Var (Hrs)</th>
+                <th>Var (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+{% endblock %}
+
+{% block extra_body_scripts %}
+    <script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+{% endblock %}

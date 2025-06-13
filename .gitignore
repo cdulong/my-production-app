@@ -1,0 +1,27 @@
+# Virtual environment
+/venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Flask-specific files
+instance/
+.flaskenv
+.env
+
+# Database file (if using SQLite directly, not PostgreSQL)
+# If using PostgreSQL, your DB is external, so no direct file here.
+# But if you ever switch to SQLite for local dev, you'd add:
+# *.db
+
+# Alembic migrations history (specific version files, but keep env.py and script.py.mako)
+/migrations/versions/ # Ignore migration script files (actual changes are in versions/)
+
+# IDE and OS generated files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

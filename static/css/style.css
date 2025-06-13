@@ -1,0 +1,463 @@
+/* static/css/style.css (Comprehensive Layout and Component Styling) */
+
+/* --- Global Resets & Body --- */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4; /* Light background for the overall page */
+    color: #333;
+    display: flex; /* Make body a flex container to push main-layout to full height */
+    min-height: 100vh; /* Ensure body takes full viewport height */
+}
+
+h1, h2, h3, h4 {
+    color: #004d40; /* Consistent heading color (dark teal) */
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+p {
+    line-height: 1.6;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* --- Main Layout (Flexbox for Sidebar + Content) --- */
+.main-layout {
+    display: flex;
+    width: 100%;
+    min-height: 100vh; /* Ensure layout fills viewport height */
+}
+
+/* --- Sidebar Styling --- */
+.sidebar {
+    width: 250px; /* Fixed width sidebar */
+    background-color: #004d40; /* Dark teal background from logo */
+    color: white;
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+}
+
+.sidebar-header {
+    text-align: center;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.sidebar-logo {
+    max-width: 120px; /* Smaller logo in sidebar header */
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.sidebar-header h2 {
+    color: #ffffff; /* White text for sidebar header title */
+    font-size: 1.5em;
+    margin: 0;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1; /* Allows menu to take available space */
+}
+
+.sidebar-menu li {
+    margin-bottom: 5px;
+}
+
+.sidebar-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: rgba(255,255,255,0.8); /* Lighter white for menu items */
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    font-size: 1.1em;
+}
+
+.sidebar-menu-item:hover,
+.sidebar-menu-item.active {
+    background-color: #0056b3; /* Darker blue on hover/active */
+    color: white;
+    text-decoration: none; /* Remove underline on hover */
+}
+
+.sidebar-menu-item i {
+    font-size: 1.2em;
+    margin-right: 10px;
+    color: #ffc107; /* Orange/Yellow for icons */
+}
+
+.menu-category {
+    font-size: 0.9em;
+    color: rgba(255,255,255,0.5); /* Very light gray for categories */
+    text-transform: uppercase;
+    padding: 15px 20px 5px 20px;
+    margin-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+.menu-category:first-of-type {
+    border-top: none; /* No top border for the first category */
+    margin-top: 0;
+}
+
+/* --- Main Content Area --- */
+.main-content {
+    flex-grow: 1; /* Allows content area to take remaining space */
+    padding: 20px;
+    background-color: #f8f9fa; /* Lighter background for content */
+    overflow-y: auto; /* Enable scrolling for content if it overflows */
+}
+
+.content-header {
+    background-color: white;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: left;
+}
+
+.page-title {
+    font-size: 2em;
+    color: #004d40;
+    margin: 0;
+}
+
+.content-body {
+    background-color: white; /* Match dashboard-container */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* --- General Table Styles (Apply to all tables within content-body) --- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    margin-bottom: 20px; /* Space below table */
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-radius: 8px;
+}
+
+table th, table td {
+    border: 1px solid #e0e0e0; /* Lighter border */
+    padding: 8px 12px; /* Standard padding */
+    text-align: left; /* Default text align for tables */
+    font-size: 0.9em;
+}
+
+table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #555;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* --- General Form Styles (Apply to all forms within content-body) --- */
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    display: flex; /* Use flex for form layout */
+    flex-wrap: wrap; /* Allow wrapping */
+    gap: 15px; /* Space between form elements */
+    align-items: flex-end; /* Align elements to the bottom */
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    flex-basis: 100%; /* Labels take full width */
+    text-align: left;
+}
+
+form input[type="text"],
+form input[type="number"],
+form input[type="date"],
+form select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    flex-grow: 1; /* Allow inputs to grow */
+    min-width: 150px; /* Minimum width for inputs */
+}
+
+/* Specific adjustment for forecastedHoursDisplay (if still a <p> or <span>) */
+p#forecastedHoursDisplay, span#forecastedHoursDisplay {
+    font-weight: bold;
+    color: #004d40;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    text-align: center;
+    flex-grow: 1;
+    min-width: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px; /* Match input height */
+}
+
+
+form div { /* For wrapping buttons, ensure it doesn't break form flex */
+    display: flex;
+    gap: 10px;
+    flex-basis: 100%; /* Take full width for buttons */
+    justify-content: flex-start; /* Align buttons to the left */
+    margin-top: 10px; /* Space above button div */
+}
+
+form button {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em; /* Adjusted font size */
+    transition: background-color 0.2s ease;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* --- General Button Styles (for table buttons too) --- */
+table button {
+    padding: 5px 8px;
+    font-size: 0.85em;
+    vertical-align: middle;
+    box-sizing: border-box;
+    margin-right: 0;
+    display: inline-block;
+    width: 35px; /* Fixed width for icon buttons */
+    height: 35px; /* Fixed height for icon buttons (square) */
+    display: flex; /* Make button a flex container for centering icon */
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background-color: #007bff; /* Default blue, will be overridden by specific classes */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+table button:hover {
+    opacity: 0.9;
+}
+
+/* Specific button colors for table actions */
+table td button.edit-btn { background-color: #28a745 !important; } /* Green */
+table td button.delete-btn { background-color: #dc3545 !important; } /* Red */
+table td button.save-btn { background-color: #007bff !important; } /* Blue */
+table td button.cancel-btn { background-color: #6c757d !important; } /* Gray */
+table td button.view-dates-btn { background-color: #17a2b8 !important; } /* Info Blue/Cyan */
+table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; color: #343a40 !important; } /* Yellow/Orange */
+
+
+/* --- Specific Report Page Styles (already existing) --- */
+.variance-positive { color: red; font-weight: bold; }
+.variance-negative { color: green; font-weight: bold; }
+.variance-neutral { color: gray; }
+
+/* Report specific table tweaks */
+#monthlyHoursReportTable th, #monthlyHoursReportTable td { text-align: center; } /* Re-center headers for clarity */
+#monthlyHoursReportTable th:nth-child(1), #monthlyHoursReportTable td:nth-child(1) { text-align: left; } /* First column left align */
+#monthlyEmployeeHoursReportTable th, #monthlyEmployeeHoursReportTable td { text-align: center; } /* Re-center headers for clarity */
+#monthlyEmployeeHoursReportTable th:nth-child(1), #monthlyEmployeeHoursReportTable td:nth-child(1) { text-align: left; } /* First column left align */
+
+
+/* --- Report Collapsing Row Styles (Existing) --- */
+.work-area-summary-row { cursor: pointer; background-color: #d1ecf1 !important; font-weight: bold; }
+.work-area-summary-row:hover { background-color: #b8daff; }
+.year-summary-row { cursor: pointer; background-color: #e6f7ff !important; font-weight: bold; }
+.year-summary-row:hover { background-color: #cceeff; }
+.work-area-detail-row { display: none; background-color: #f0f8ff !important; }
+.year-summary-row td:nth-child(1) { padding-left: 30px !important; }
+.work-area-detail-row td:nth-child(1) { padding-left: 60px !important; }
+
+.employee-summary-row { cursor: pointer; background-color: #e6f7ff !important; font-weight: bold; }
+.employee-summary-row:hover { background-color: #cceeff; }
+.employee-detail-row { display: none; background-color: #f0f8ff !important; }
+.employee-detail-row td:nth-child(1) { font-size: 0.9em; padding-left: 30px !important; }
+.toggle-icon { margin-right: 5px; }
+
+/* Chart specific styles (existing) */
+#monthlyWorkAreaChart {
+    max-width: 100%; /* Ensure responsiveness within container */
+    height: 100%; /* Ensure it fills container height */
+}
+#chartMessage { /* Already defined inline, ensure it matches */
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; background-color: rgba(255,255,255,0.9); align-items: center; justify-content: center; text-align: center; color: gray; font-weight: bold; z-index: 1;
+}
+/* --- Employee Form Layout --- */
+.employee-form-grid {
+    display: flex;
+    flex-wrap: wrap; /* Allow items to wrap to next line */
+    gap: 15px 20px; /* Vertical gap, Horizontal gap */
+    align-items: flex-start; /* Align items to the start of their cross-axis */
+    justify-content: flex-start; /* Align items to the start of the main axis */
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.employee-form-grid .form-group {
+    display: flex;
+    flex-direction: column; /* Stack label and input */
+    flex-basis: calc(33.333% - 20px); /* Default to 3 columns, adjust as needed */
+    /* On smaller screens, these will wrap. */
+    min-width: 200px; /* Ensure fields don't get too small */
+}
+
+/* Adjust specific input/select width within form-group */
+.employee-form-grid .form-group input,
+.employee-form-grid .form-group select,
+.employee-form-grid .form-group p#forecastedHoursDisplay { /* Target the p tag for forecast display */
+    width: 100%; /* Fill the group's width */
+    padding: 8px 10px; /* Slightly smaller padding for tighter fit */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    height: 38px; /* Standard height for consistency */
+}
+
+.employee-form-grid .form-group label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    text-align: left; /* Ensure labels are left-aligned */
+    flex-basis: auto; /* Label doesn't take full row width in new context */
+    display: block; /* Keep as block for stacking above input */
+}
+
+/* Specific styling for the forecast display p tag */
+.employee-form-grid .forecast-display-group p#forecastedHoursDisplay {
+    background-color: #f9f9f9;
+    color: #004d40;
+    /* --- CRITICAL FIX: Remove default margins and ensure consistent height/alignment --- */
+    margin: 0; /* Remove default top/bottom margins */
+    display: flex; /* Ensure it's a flex container */
+    align-items: center; /* Vertically center content */
+    justify-content: center; /* Horizontally center content (if not 100% wide) */
+    height: 38px; /* Maintain standard height for consistency */
+    /* --- END CRITICAL FIX --- */
+    width: 100%; /* Ensure it fills its parent container */
+    padding: 8px 10px; /* Keep consistent padding */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Styles for the action buttons container */
+.employee-form-grid .form-actions {
+    flex-basis: 100%; /* Buttons take full width */
+    display: flex;
+    justify-content: flex-start; /* Align buttons to the left */
+    gap: 10px; /* Space between buttons */
+    margin-top: 10px;
+    padding-top: 10px; /* Space above buttons */
+    border-top: 1px solid #eee; /* Separator line */
+}
+
+/* Adjust general form button styles to fit the new context */
+.employee-form-grid .form-actions button {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease;
+}
+
+.employee-form-grid .form-actions button:hover {
+    background-color: #0056b3;
+}
+
+/* --- Employee Table Specific Styles --- */
+#employeesTable th, #employeesTable td {
+    padding: 6px 8px; /* Slightly tighter padding for employee table cells */
+    min-width: 60px; /* Default min-width for smaller content cells */
+    text-align: center; /* Center content in data cells */
+}
+
+#employeesTable th:nth-child(1), #employeesTable td:nth-child(1) { /* Order column */
+    min-width: 40px;
+    text-align: center; /* Center order number */
+}
+
+#employeesTable th:nth-child(2), #employeesTable td:nth-child(2) { /* ID column */
+    min-width: 40px;
+    text-align: center; /* Center ID number */
+}
+
+#employeesTable th:nth-child(3), #employeesTable td:nth-child(3) { /* First Name */
+    min-width: 80px;
+    text-align: left;
+}
+
+#employeesTable th:nth-child(4), #employeesTable td:nth-child(4) { /* Last Initial */
+    min-width: 30px;
+    text-align: center;
+}
+
+#employeesTable th:nth-child(5), #employeesTable td:nth-child(5) { /* Position Title */
+    min-width: 90px;
+    text-align: left;
+}
+
+#employeesTable th:nth-child(6), #employeesTable td:nth-child(6) { /* Primary Work Area */
+    min-width: 100px;
+    text-align: left;
+}
+
+#employeesTable th:nth-child(7), #employeesTable td:nth-child(7) { /* Employment Start Date */
+    min-width: 95px;
+    text-align: center;
+}
+
+#employeesTable th:nth-child(8), #employeesTable td:nth-child(8) { /* Employment End Date */
+    min-width: 95px;
+    text-align: center;
+}
+
+#employeesTable th:nth-child(9), #employeesTable td:nth-child(9) { /* Default Forecasted Hours */
+    min-width: 70px;
+    text-align: center;
+}
+
+#employeesTable th:nth-child(10), #employeesTable td:nth-child(10) { /* Actions Column */
+    min-width: 80px; /* Adjusted min-width for icons */
+    text-align: right; /* Default right alignment */
+    /* Flexbox for buttons will be applied via JS inline style */
+}

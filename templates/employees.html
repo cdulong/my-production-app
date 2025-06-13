@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Employees{% endblock %}
+
+{% block page_title %}Manage Employees{% endblock %}
+
+{% block content %}
+    <form id="employeeForm" class="employee-form-grid"> <input type="hidden" id="employeeId" value="">
+        
+        <div class="form-group">
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="lastInitial">Last Initial:</label>
+            <input type="text" id="lastInitial" maxlength="1" required>
+        </div>
+
+        <div class="form-group">
+            <label for="primaryWorkArea">Primary Work Area:</label>
+            <select id="primaryWorkArea" required>
+                </select>
+        </div>
+
+        <div class="form-group">
+            <label for="position">Position:</label>
+            <select id="position" required>
+                </select>
+        </div>
+     
+        <div class="form-group">
+            <label for="employmentStartDate">Employment Start Date:</label>
+            <input type="date" id="employmentStartDate" required>
+        </div>
+
+        <div class="form-group">
+            <label for="employmentEndDate">Employment End Date (Optional):</label>
+            <input type="date" id="employmentEndDate">
+        </div>
+
+        <div class="form-group forecast-display-group"> <label>Default Forecasted Daily Hours:</label>
+            <p id="forecastedHoursDisplay"></p>
+        </div>
+
+        <div class="form-actions"> <button type="submit">Save Employee</button>
+            <button type="button" id="cancelEdit">Cancel</button>
+        </div>
+    </form>
+
+    <h2>Existing Employees</h2>
+    <table id="employeesTable" border="1">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>ID</th>
+                <th>First<br>Name</th>
+                <th>Last<br>Initial</th>
+                <th>Position</th>
+                <th>Primary<br>Work Area</th>
+                <th>Employment<br> Start Date</th>
+                <th>Employment<br> End Date</th>
+                <th>Default<br>Forecasted<br>Hours</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="employeesTableBody">
+            </tbody>
+    </table>
+{% endblock %}
+
+{% block extra_body_scripts %}
+    <script src="{{ url_for('static', filename='js/Sortable.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/employees.js') }}"></script>
+{% endblock %}

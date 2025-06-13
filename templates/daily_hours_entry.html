@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Labour Hours Entry{% endblock %}
+
+{% block page_title %}Daily Labour Hours Entry{% endblock %}
+
+{% block content %}
+    <div id="statusMessage" style="color: red; font-weight: bold; margin-bottom: 10px;"></div>
+
+    <div class="date-navigator">
+        <button id="prevWeekBtn">&lt; Prev Week</button>
+        <label for="weekStartDatePicker">Select Week Start (Monday):</label>
+        <input type="date" id="weekStartDatePicker">
+        <button id="nextWeekBtn">Next Week &gt;</button>
+        <p>Currently displaying week of: <span id="currentWeekDisplay"></span></p>
+    </div>
+
+    <div style="margin-bottom: 15px; text-align: center;">
+        <label for="editForecastToggle">
+            <input type="checkbox" id="editForecastToggle"> Enable Forecast Editing
+        </label>
+    </div>
+
+    <table id="dailyHoursTable" border="1">
+        <thead>
+            <tr>
+                <th>Employee Name</th>
+                <th>Assigned Work Area</th>
+                <th>SUN<br><span id="dateSun"></span></th>
+                <th>MON<br><span id="dateMon"></span></th>
+                <th>TUE<br><span id="dateTue"></span></th>
+                <th>WED<br><span id="dateWed"></span></th>
+                <th>THU<br><span id="dateThu"></span></th>
+                <th>FRI<br><span id="dateFri"></span></th>
+                <th>SAT<br><span id="dateSat"></span></th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+
+    <button id="saveAllHoursBtn">Save All Hours</button>
+{% endblock %}
+
+{% block extra_body_scripts %}
+    <script src="{{ url_for('static', filename='js/daily_hours_entry.js') }}"></script>
+{% endblock %}
