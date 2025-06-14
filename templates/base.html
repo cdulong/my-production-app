@@ -49,8 +49,11 @@
         </main>
     </div>
 
+    <div id="toast-container"></div>
+
     {% block extra_body_scripts %}
         <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
     {% endblock %}
 </body>
 </html>

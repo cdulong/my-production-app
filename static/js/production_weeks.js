@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("CRITICAL ERROR in fetchProductionWeeks (Full Page Logic):", error);
-            alert(`CRITICAL ERROR: Failed to load production schedules: ${error.message}`);
+            showToast(`CRITICAL ERROR: Failed to load production schedules: ${error.message}`,'error');
             tableBody.innerHTML = `<tr><td colspan="12" style="color:red;">Error loading schedules: ${error.message}</td></tr>`; // Adjust colspan
         }
     }
@@ -367,16 +367,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                alert('Production Schedule updated successfully!');
+                showToast('Production Schedule updated successfully!','success');
                 window.disableEditMode(weekId, false);
                 fetchProductionWeeks();
             } else {
                 const error = await response.json();
-                alert(`Error updating schedule: ${error.message}`);
+                showToast(`Error updating schedule: ${error.message}`,'error');
             }
         } catch (error) {
             console.error("Error saving production schedule:", error);
-            alert(`Failed to save production schedule: ${error.message}`);
+            showToast(`Failed to save production schedule: ${error.message}`,'error');
         }
     };
 
@@ -426,16 +426,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                alert('Production Schedule deleted successfully!');
+                showToast('Production Schedule deleted successfully!','success');
                 fetchProductionWeeks();
                 contributingDatesDisplay.innerHTML = '<p>Select a schedule from the table above to see its contributing dates per work area.</p>';
             } else {
                 const error = await response.json();
-                alert(`Error deleting production schedule: ${error.message}`);
+                showToast(`Error deleting production schedule: ${error.message}`,'error');
             }
         } catch (error) {
             console.error("Error deleting production schedule:", error);
-            alert(`Failed to delete production schedule: ${error.message}`);
+            showToast(`Failed to delete production schedule: ${error.message}`,'error');
         }
     };
 
@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("DEBUG: Start date from picker:", startDate);
 
         if (!startDate) {
-            alert("Please select a start date.");
+            showToast('Please select a start date.','error');
             console.log("DEBUG: Start date is empty.");
             return;
         }
@@ -461,16 +461,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                alert('Production Schedule created successfully and daily hours generated!');
+                showToast('Production Schedule created successfully and daily hours generated!','success');
                 form.reset(); // Reset the form using the 'form' variable from parent scope
                 fetchProductionWeeks(); // Refresh table
             } else {
                 const error = await response.json();
-                alert(`Error creating production schedule: ${error.message}`);
+                showToast(`Error creating production schedule: ${error.message}`,'error');
             }
         } catch (error) {
             console.error("Error submitting production schedule form:", error);
-            alert(`Failed to create production schedule: ${error.message}`);
+            showToast(`Failed to create production schedule: ${error.message}`,'error');
         }
     };
 

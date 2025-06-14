@@ -701,3 +701,42 @@ body.sidebar-collapsed .content-container {
     gap: 5px; /* Adds a small space between the buttons */
     justify-content: flex-start;
 }
+
+/* --- Toast Notification Styles --- */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050; /* High z-index to appear over other content */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    padding: 15px 20px;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 1em;
+    opacity: 0;
+    transform: translateX(100%);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast.success {
+    background-color: #28a745; /* Green */
+}
+
+.toast.error {
+    background-color: #dc3545; /* Red */
+}
+
+.toast.info {
+    background-color: #17a2b8; /* Blue */
+}

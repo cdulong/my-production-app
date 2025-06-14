@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             console.error("Error fetching positions for dropdown:", error);
-            alert(`Failed to load positions for dropdown: ${error.message}`);
+            showToast(`Failed to load positions for dropdown: ${error.message}`, 'error');
         }
     }
 
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Error fetching employees:", error);
-            alert(`Failed to load employees: ${error.message}`);
+            showToast(`Failed to load employees: ${error.message}`, 'error');
         }
     }
 
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             console.error("Error fetching work areas for dropdown:", error);
-            alert(`Failed to load work areas for dropdown: ${error.message}`);
+            showToast(`Failed to load work areas for dropdown: ${error.message}`, 'error');
         }
     }
 
@@ -177,36 +177,36 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- CRITICAL FIX: Robust validation for all fields ---
         // 1. Validate required text/date fields
         if (!employeeData.first_name) {
-            alert("First Name is required.");
+            showToast('First Name is required.','error');
             return;
         }
         if (!employeeData.last_initial) {
-            alert("Last Initial is required.");
+            showToast('Last Initial is required.','error');
             return;
         }
         if (employeeData.last_initial.length > 1) {
-            alert("Last Initial should be a single character.");
+            showToast('Last Initial should be a single character.','error');
             return;
         }
         if (!employeeData.employment_start_date) {
-            alert("Employment Start Date is required.");
+            showToast('Employment Start Date is required.','error');
             return;
         }
 
         // 2. Validate required numeric dropdowns (IDs)
         if (isNaN(employeeData.position_id)) {
-            alert("Please select a valid Position.");
+            showToast('Please select a valid Position.','error');
             return;
         }
         if (isNaN(employeeData.primary_work_area_id)) {
-            alert("Please select a valid Primary Work Area.");
+            showToast('Please select a valid Primary Work Area.','error');
             return;
         }
 
         // 3. Validate date logic (End Date not before Start Date) - already present
         if (employeeData.employment_start_date && employeeData.employment_end_date) {
             if (new Date(employeeData.employment_start_date) > new Date(employeeData.employment_end_date)) {
-                alert("Employment End Date cannot be before Employment Start Date.");
+                showToast('Employment End Date cannot be before Employment Start Date.','error');
                 return;
             }
         }
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                alert('Employee saved successfully!');
+                showToast('Employee saved successfully!', 'success');
                 form.reset();
                 forecastedHoursDisplay.textContent = '';
                 editingEmployeeId = null;
@@ -232,11 +232,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchEmployees(); // Refresh table
             } else {
                 const error = await response.json();
-                alert(`Error saving employee: ${error.message}`);
+                showToast(`Error saving employee: ${error.message}`,'error');
             }
         } catch (error) {
             console.error("Error submitting employee form:", error);
-            alert(`Failed to save employee: ${error.message}`);
+            showToast(`Failed to save employee: ${error.message}`,'error');
         }
     });
 
@@ -281,15 +281,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                alert('Employee deleted successfully!');
+                showToast('Employee deleted successfully!','success');
                 fetchEmployees(); // Refresh table
             } else {
                 const error = await response.json();
-                alert(`Error deleting employee: ${error.message}`);
+                showToast(`Error deleting employee: ${error.message}`,'error');
             }
         } catch (error) {
             console.error("Error deleting employee:", error);
-            alert(`Failed to delete employee: ${error.message}`);
+            showToast(`Failed to delete employee: ${error.message}`,'error');
         }
     }
 
@@ -325,18 +325,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     if (response.ok) {
-                        alert('Employee order updated successfully!');
+                        showToast('Employee order updated successfully!', 'success');
                         // Refresh the table to show updated display_order numbers and ensure consistency
                         fetchEmployees();
                     } else {
                         const error = await response.json();
-                        alert(`Error updating order: ${error.message}`);
+                        showToast(`Error updating order: ${error.message}`,'error');
                         // If save fails, re-fetch to revert to original order (visual & data mismatch)
                         fetchEmployees();
                     }
                 } catch (error) {
                     console.error("Error saving new order:", error);
-                    alert(`Failed to save new order: ${error.message}`);
+                    showToast(`Failed to save new order: ${error.message}`,'error');
                     fetchEmployees(); // Revert to original order on network/server error
                 }
             }

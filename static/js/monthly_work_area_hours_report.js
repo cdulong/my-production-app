@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const chartContainerDiv = chartCanvas.parentElement; // The div with width/height styles
 
         if (!chartCanvas || !window.html2canvas || !window.jspdf.jsPDF) {
-            alert('PDF generation libraries not loaded or chart not ready.');
+            showToast('PDF generation libraries not loaded or chart not ready.', 'error');
             console.error('PDF generation libraries or chart not ready.');
             return;
         }
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Error generating PDF:", error);
-            alert(`Failed to generate PDF: ${error.message}`);
+            showToast(`Failed to generate PDF: ${error.message}`,'error');
         } finally {
             printChartToPDFBtn.textContent = originalButtonText;
             printChartToPDFBtn.disabled = false;
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const employeeTable = document.getElementById('monthlyEmployeeHoursReportTable'); // Get the Employee table (for summary extraction)
 
         if (!chartCanvas || !window.html2canvas || !workAreaTable || !employeeTable) {
-            alert('Chart or report tables not ready for email. Please ensure data is loaded.');
+            showToast('Chart or report tables not ready for email. Please ensure data is loaded.','error');
             console.error('Chart or report tables not found for email generation.');
             return;
         }
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
-            alert("Please enter a valid email address.");
+            showToast('Please enter a valid email address.','error');
             return;
         }
 
@@ -435,15 +435,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                alert('Report email sent successfully!');
+                showToast('Report email sent successfully!','success');
             } else {
                 const error = await response.json();
-                alert(`Failed to send email: ${error.message}`);
+                showToast(`Failed to send email: ${error.message}`,'error');
                 console.error('Email send error:', error);
             }
         } catch (error) {
             console.error("Error capturing chart or sending email:", error);
-            alert(`An unexpected error occurred while sending email: ${error.message}`);
+            showToast(`An unexpected error occurred while sending email: ${error.message}`,'error');
         } finally {
             emailChartReportBtn.textContent = originalButtonText;
             emailChartReportBtn.disabled = false;
@@ -900,7 +900,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Error fetching monthly work area report:", error);
-            alert(`Failed to load monthly work area report: ${error.message}`);
+            showToast(`Failed to load monthly work area report: ${error.message}`,'error');
             workAreaTableBody.innerHTML = `<tr><td colspan="5" style="color:red;">Error loading report: ${error.message}</td></tr>`;
         }
     }
@@ -1136,7 +1136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Error fetching monthly employee report:", error);
-            alert(`Failed to load monthly employee report: ${error.message}`);
+            showToast(`Failed to load monthly employee report: ${error.message}`,'error');
             employeeTableBody.innerHTML = `<tr><td colspan="5" style="color:red;">Error loading report: ${error.message}</td></tr>`;
         }
     }

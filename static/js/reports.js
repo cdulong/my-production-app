@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Error fetching reports:", error);
-            alert(`Failed to load reports: ${error.message}`);
+            showToast(`Failed to load reports: ${error.message}`,'error');
             reportsTableBody.innerHTML = `<tr><td colspan="13" style="color:red;">Error loading reports: ${error.message}</td></tr>`;
         }
     }

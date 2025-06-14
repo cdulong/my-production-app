@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Error fetching positions:", error);
-            alert(`Failed to load positions: ${error.message}`);
+            showToast(`Failed to load positions: ${error.message}`, 'error');
         }
     }
 
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Basic validation
         if (!title || isNaN(defaultHours) || defaultHours < 0) {
-            alert("Please fill in a valid position title and non-negative default hours.");
+            showToast('Please fill in a valid position title and non-negative default hours.', 'error');
             return;
         }
 
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                alert('Position saved successfully!');
+                showToast('Position saved successfully!', 'success');
                 form.reset();
                 editingPositionId = null;
                 saveButton.textContent = 'Save Position';
@@ -128,11 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchPositions(); // Refresh table
             } else {
                 const error = await response.json();
-                alert(`Error saving position: ${error.message}`);
+                showToast(`Error saving position: ${error.message}`, 'error');
             }
         } catch (error) {
             console.error("Error submitting position form:", error);
-            alert(`Failed to save position: ${error.message}`);
+            showToast(`Failed to save position: ${error.message}`, 'error');
         }
     });
 
@@ -165,15 +165,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                alert('Position deleted successfully!');
+                showToast('Position deleted successfully!', 'success');
                 fetchPositions(); // Refresh table
             } else {
                 const error = await response.json();
-                alert(`Error deleting position: ${error.message}`);
+                showToast(`Error deleting position: ${error.message}`, 'error');
             }
         } catch (error) {
             console.error("Error deleting position:", error);
-            alert(`Failed to delete position: ${error.message}`);
+            showToast(`Failed to delete position: ${error.message}`, 'error');
         }
     }
 
@@ -215,18 +215,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     if (response.ok) {
-                        alert('Position order updated successfully!');
+                        showToast('Position order updated successfully!', 'success');
                         // Refresh the table to show updated display_order numbers
                         fetchPositions();
                     } else {
                         const error = await response.json();
-                        alert(`Error updating order: ${error.message}`);
+                        showToast(`Error updating order: ${error.message}`, 'error');
                         // If save fails, re-fetch to revert to original order
                         fetchPositions();
                     }
                 } catch (error) {
                     console.error("Error saving new order:", error);
-                    alert(`Failed to save new order: ${error.message}`);
+                    showToast(`Failed to save new order: ${error.message}`, 'error');
                     fetchPositions(); // Revert to original order on error
                 }
             }
