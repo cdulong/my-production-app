@@ -1,26 +1,46 @@
-// static/js/main.js (Global JavaScript for UI enhancements)
 document.addEventListener('DOMContentLoaded', () => {
-    // Function to highlight the current active sidebar link
+
+    // --- 1. Existing Function to highlight the current active sidebar link ---
     function highlightActiveSidebarLink() {
-        const currentPath = window.location.pathname; // Get the path of the current page (e.g., '/', '/employees')
+        const currentPath = window.location.pathname; // Get the path of the current page
         const sidebarLinks = document.querySelectorAll('.sidebar-menu-item'); // Select all sidebar links
 
         sidebarLinks.forEach(link => {
+            const linkPath = link.getAttribute('href');
             link.classList.remove('active'); // Remove 'active' class from all links first
 
-            // Check if the link's href matches the current path
-            // Handle root path separately, as href="/" matches all paths
-            if (currentPath === '/' && link.getAttribute('href') === '/') {
+            // Check if the link's href matches the current path.
+            // Using startsWith handles cases like /employees and /employees/1
+            if (linkPath !== '/' && currentPath.startsWith(linkPath)) {
                 link.classList.add('active');
-            } else if (currentPath !== '/' && link.getAttribute('href') !== '/' && currentPath.startsWith(link.getAttribute('href'))) {
-                // For subpages, check if currentPath starts with the link's href (e.g., /employees matches /employees/1)
+            } else if (linkPath === '/' && currentPath === '/') {
+                // Handle the root path explicitly
                 link.classList.add('active');
             }
         });
     }
 
-    // Call the function on initial page load
+    // Call the highlight function on initial page load
     highlightActiveSidebarLink();
 
-    // You can add other global JavaScript functions here if needed
+
+    // --- 2. New Functionality for the collapsible sidebar ---
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const body = document.body;
+
+    if (sidebarToggle) {
+
+        // Add click event listener to the toggle button
+        sidebarToggle.addEventListener('click', function() {
+            body.classList.toggle('sidebar-collapsed');
+
+            // Save the new state to localStorage
+            if (body.classList.contains('sidebar-collapsed')) {
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else {
+                localStorage.setItem('sidebarCollapsed', 'false');
+            }
+        });
+    }
+
 });

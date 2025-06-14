@@ -472,3 +472,232 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
 .card-footer:hover {
     background-color: rgba(0, 0, 0, 0.2);
 }
+
+/* --- Dashboard Enhancements --- */
+
+.dashboard-container {
+    text-align: center;
+    background-color: #ffffff;
+    padding: 20px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-header {
+    margin-bottom: 40px;
+}
+
+.dashboard-logo {
+    max-width: 180px;
+    margin-bottom: 15px;
+}
+
+.dashboard-header h1 {
+    color: #004d40;
+    margin-bottom: 5px;
+}
+
+.dashboard-header p {
+    color: #6c757d;
+    font-size: 1.1em;
+}
+
+.dashboard-main {
+    text-align: left;
+}
+
+.dashboard-section {
+    margin-bottom: 35px;
+}
+
+.dashboard-section h2 {
+    color: #004d40;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.dashboard-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 25px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    color: #343a40;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.dashboard-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 77, 64, 0.15);
+    background-color: #e9ecef;
+    border-color: #004d40;
+    text-decoration: none;
+}
+
+.dashboard-button .icon {
+    font-size: 2.5em;
+    margin-bottom: 15px;
+    color: #004d40;
+}
+
+.dashboard-button span {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+/* --- Final Dashboard Button Styling --- */
+
+.dashboard-button {
+    justify-content: space-around; /* Better vertical spacing */
+}
+
+.dashboard-button .icon {
+    font-size: 2em; /* Make icons a bit smaller to give numbers room */
+    margin-bottom: 10px;
+}
+
+.dashboard-button span {
+    font-size: 1em; /* Adjust text size */
+}
+
+.button-data {
+    font-size: 2.2em;
+    font-weight: 700;
+    color: #004d40;
+    margin-top: 10px;
+    line-height: 1;
+}
+
+.button-data small {
+    font-size: 0.4em;
+    font-weight: 500;
+    color: #6c757d;
+}
+
+/* --- Collapsible Sidebar Styles (Corrected) --- */
+
+/* NEW: Make the body a flex container */
+body {
+    display: flex;
+    background-color: #f4f4f4; /* Ensure background covers page */
+}
+
+/* Ensure the sidebar has a fixed position and z-index */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh; /* Full viewport height */
+    width: 250px; /* Expanded width */
+    z-index: 1020; /* High z-index */
+    transition: width 0.3s ease-in-out; /* Animate width change */
+}
+
+.sidebar-title {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* NEW: Main content container gets a margin that will change */
+.content-container {
+    margin-left: 250px; /* Match expanded sidebar width */
+    width: calc(100% - 250px); /* Fill remaining space */
+    transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
+    padding: 0; /* Remove padding from this wrapper */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header for the toggle button */
+.main-header {
+    background-color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    font-size: 1.5em; /* Larger icon */
+    cursor: pointer;
+    color: #343a40;
+    margin-right: 15px; /* Space between button and title */
+}
+
+.page-title {
+    margin: 0; /* Remove default margin */
+}
+
+/* This is the main content area with padding now */
+.content-body {
+    padding: 20px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+
+/* --- Styles for the COLLAPSED state --- */
+body.sidebar-collapsed .sidebar {
+    width: 70px; /* Collapsed width */
+}
+
+body.sidebar-collapsed .sidebar .sidebar-logo,
+body.sidebar-collapsed .sidebar .sidebar-title,
+body.sidebar-collapsed .sidebar .sidebar-menu-item span,
+body.sidebar-collapsed .sidebar .menu-category {
+    opacity: 0; /* Fade out text and logo */
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+body.sidebar-collapsed .sidebar .sidebar-menu-item {
+    justify-content: center; /* Center the icon */
+}
+
+body.sidebar-collapsed .sidebar .sidebar-menu-item .fas {
+    margin-right: 0; /* Remove margin when text is hidden */
+    font-size: 1.4em; /* Make icons slightly larger when collapsed */
+}
+
+body.sidebar-collapsed .content-container {
+    margin-left: 70px; /* Match collapsed sidebar width */
+    width: calc(100% - 70px);
+}
+
+/* --- Active Sidebar Link Style --- */
+
+.sidebar-menu-item.active {
+    background-color: #004d40; /* A dark green background */
+    color: #ffffff; /* White text */
+    border-radius: 5px;
+}
+
+.sidebar-menu-item.active .fas {
+    color: #ffffff; /* White icon */
+}
+
+/* --- Action Button Container Styling --- */
+.action-buttons {
+    display: flex;
+    gap: 5px; /* Adds a small space between the buttons */
+    justify-content: flex-start;
+}

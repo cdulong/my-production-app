@@ -8,6 +8,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveButton = form.querySelector('button[type="submit"]');
     const cancelButton = document.getElementById('cancelEdit');
 
+    const commonButtonStyleInline = `
+        padding: 0; /* Remove padding */
+        font-size: 1.2em; /* Larger font for icon */
+        vertical-align: middle;
+        box-sizing: border-box;
+        margin-right: 0; /* Managed by flexbox gap on parent td */
+        display: flex; /* Make button a flex container for centering icon */
+        justify-content: center; /* Center icon horizontally */
+        align-items: center; /* Center icon vertically */
+        overflow: hidden; /* Hide any overflow */
+        width: 35px; /* Fixed width for icon button */
+        height: 35px; /* Fixed height for icon button (square) */
+        flex-grow: 0;
+        flex-shrink: 0;
+        flex-basis: auto;
+        /* Default colors (will be overridden by specific classes for Edit/Delete) */
+        background-color: #007bff; /* Blue */
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    `;
+
     let editingWorkAreaId = null;
 
     async function fetchWorkAreas() {
@@ -38,15 +62,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const actionsCell = row.insertCell(4); // Actions column (adjusted index)
 
+                actionsCell.style.display = 'flex';
+                actionsCell.style.gap = '5px'; // Space between buttons
+                actionsCell.style.justifyContent = 'flex-end'; // Align buttons to the right
+                actionsCell.style.alignItems = 'center'; // Vertically center buttons
+                actionsCell.style.flexWrap = 'nowrap'; // Prevent buttons from wrapping
+
                 // ... (existing button creation for edit/delete) ...
                 const editButton = document.createElement('button');
-                editButton.textContent = 'Edit';
+                editButton.innerHTML = '<i class="fas fa-pencil"></i>'; // Pencil Icon
+                editButton.ariaLabel = 'Edit Work Area'; // Accessibility
                 editButton.onclick = () => editWorkArea(area);
+                editButton.classList.add('edit-btn'); // Class for specific styling (green)
+                editButton.style.cssText = commonButtonStyleInline;
                 actionsCell.appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
+                deleteButton.innerHTML = '<i class="fas fa-trash-can"></i>'; // Trash Can Icon
+                deleteButton.ariaLabel = 'Delete Work Area'; // Accessibility
                 deleteButton.onclick = () => deleteWorkArea(area.work_area_id);
+                deleteButton.classList.add('delete-btn'); // Class for specific styling (red)
+                deleteButton.style.cssText = commonButtonStyleInline;
                 actionsCell.appendChild(deleteButton);
             });
 

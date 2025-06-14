@@ -1,60 +1,65 @@
 {% extends "base.html" %}
 
+{% block title %}Production Management Dashboard{% endblock %}
+
 {% block content %}
-<h1 class="mb-4">Dashboard</h1>
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <img src="{{ url_for('static', filename='images/logo_FINAL.svg') }}" alt="Company Logo" class="dashboard-logo">
+        <h1>Production Management Dashboard</h1>
+        <p>Welcome to your centralized production insights.</p>
+    </header>
 
-<div class="row">
-    <div class="col-md-3 mb-4">
-        <div class="card text-white bg-primary h-100">
-            <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-users"></i> Total Employees</h5>
-                <p class="card-text display-4">{{ total_employees }}</p>
+    <main class="dashboard-main">
+        <section class="dashboard-section">
+            <h2>Master Data</h2>
+            <div class="button-grid">
+                <a href="{{ url_for('employees_page') }}" class="dashboard-button">
+                    <i class="fas fa-users icon"></i>
+                    <span>Manage Employees</span>
+                    <span class="button-data">{{ total_employees }}</span>
+                </a>
+                <a href="{{ url_for('positions_page') }}" class="dashboard-button">
+                    <i class="fas fa-briefcase icon"></i>
+                    <span>Manage Positions</span>
+                    <span class="button-data">{{ total_positions }}</span>
+                </a>
+                <a href="{{ url_for('work_areas_page') }}" class="dashboard-button">
+                    <i class="fas fa-industry icon"></i>
+                    <span>Manage Work Areas</span>
+                    <span class="button-data">{{ total_work_areas }}</span>
+                </a>
             </div>
-            <a href="{{ url_for('employees_page') }}" class="card-footer text-white">View Details <i class="fas fa-arrow-circle-right"></i></a>
-        </div>
-    </div>
-    <div class="col-md-3 mb-4">
-        <div class="card text-white bg-success h-100">
-            <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-industry"></i> Total Work Areas</h5>
-                <p class="card-text display-4">{{ total_work_areas }}</p>
+        </section>
+
+        <section class="dashboard-section">
+            <h2>Production Operations</h2>
+            <div class="button-grid">
+                <a href="{{ url_for('production_weeks_page') }}" class="dashboard-button">
+                    <i class="fas fa-calendar-alt icon"></i>
+                    <span>Production Schedules</span>
+                </a>
+                <a href="{{ url_for('daily_hours_entry_page') }}" class="dashboard-button">
+                    <i class="fas fa-clock icon"></i>
+                    <span>Daily Hours Entry</span>
+                    <span class="button-data">{{ "%.2f"|format(todays_hours) }} <small>hrs</small></span>
+                </a>
             </div>
-            <a href="{{ url_for('work_areas_page') }}" class="card-footer text-white">View Details <i class="fas fa-arrow-circle-right"></i></a>
-        </div>
-    </div>
-    <div class="col-md-3 mb-4">
-        <div class="card text-white bg-info h-100">
-            <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-user-tie"></i> Total Positions</h5>
-                <p class="card-text display-4">{{ total_positions }}</p>
+        </section>
+
+        <section class="dashboard-section">
+            <h2>Reports & Analytics</h2>
+            <div class="button-grid">
+                <a href="{{ url_for('reports_page') }}" class="dashboard-button">
+                    <i class="fas fa-chart-line icon"></i>
+                    <span>Weekly Overview</span>
+                </a>
+                <a href="{{ url_for('monthly_work_area_hours_report_page') }}" class="dashboard-button">
+                    <i class="fas fa-chart-bar icon"></i>
+                    <span>Monthly Hours</span>
+                </a>
             </div>
-            <a href="{{ url_for('positions_page') }}" class="card-footer text-white">View Details <i class="fas fa-arrow-circle-right"></i></a>
-        </div>
-    </div>
-    <div class="col-md-3 mb-4">
-        <div class="card text-white bg-warning h-100">
-            <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-clock"></i> Hours Logged Today</h5>
-                <p class="card-text display-4">{{ "%.2f"|format(todays_hours) }}</p>
-            </div>
-            <a href="{{ url_for('daily_hours_entry_page') }}" class="card-footer text-white">Enter Hours <i class="fas fa-arrow-circle-right"></i></a>
-        </div>
-    </div>
+        </section>
+    </main>
 </div>
-
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Quick Links</h5>
-                <div class="list-group">
-                    <a href="{{ url_for('production_weeks_page') }}" class="list-group-item list-group-item-action">Production Schedules</a>
-                    <a href="{{ url_for('daily_hours_entry_page') }}" class="list-group-item list-group-item-action">Daily Hours Entry</a>
-                    <a href="{{ url_for('reports_page') }}" class="list-group-item list-group-item-action">Reports</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 {% endblock %}

@@ -49,5 +49,5 @@
 {% endblock %}
 
 {% block extra_body_scripts %}
-    <script src="{{ url_for('static', filename='js/production_weeks.js') }}"></script>
+    {{ super() }} <script src="{{ url_for('static', filename='js/production_weeks.js') }}"></script>
 {% endblock %}

@@ -43,5 +43,5 @@
 {% endblock %}
 
 {% block extra_body_scripts %}
-    <script src="{{ url_for('static', filename='js/daily_hours_entry.js') }}"></script>
+    {{ super() }} <script src="{{ url_for('static', filename='js/daily_hours_entry.js') }}"></script>
 {% endblock %}

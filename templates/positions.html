@@ -32,6 +32,6 @@
 {% endblock %}
 
 {% block extra_body_scripts %}
+    {{ super() }} <script src="{{ url_for('static', filename='js/positions.js') }}"></script>
     <script src="{{ url_for('static', filename='js/Sortable.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/positions.js') }}"></script>
 {% endblock %}
