@@ -461,3 +461,14 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     text-align: right; /* Default right alignment */
     /* Flexbox for buttons will be applied via JS inline style */
 }
+
+/* Dashboard Cards */
+.card-footer {
+    text-decoration: none;
+    background-color: rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
+}
+
+.card-footer:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
