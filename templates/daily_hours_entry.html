@@ -4,44 +4,66 @@
 
 {% block page_title %}Daily Labour Hours Entry{% endblock %}
 
+{% block header_actions %}
+    <button id="saveAllHoursBtn" class="btn btn-primary-action">
+        <i class="fas fa-save"></i>
+        <span>Save All Hours</span>
+    </button>
+{% endblock %}
+
 {% block content %}
     <div id="statusMessage" style="color: red; font-weight: bold; margin-bottom: 10px;"></div>
 
-    <div class="date-navigator">
-        <button id="prevWeekBtn">&lt; Prev Week</button>
-        <label for="weekStartDatePicker">Select Week Start (Monday):</label>
-        <input type="date" id="weekStartDatePicker">
-        <button id="nextWeekBtn">Next Week &gt;</button>
-        <p>Currently displaying week of: <span id="currentWeekDisplay"></span></p>
+    <div class="page-controls-header">
+        <div class="week-navigation">
+            <div class="nav-row">
+                <label for="weekStartDatePicker">Select Week Start (Monday):</label>
+                <input type="date" id="weekStartDatePicker">
+            </div>
+            <div class="nav-row">
+                <button id="prevWeekBtn" class="btn-nav">&lt; Prev Week</button>
+                <p>Currently displaying week of: <span id="currentWeekDisplay"></span></p>
+                <button id="nextWeekBtn" class="btn-nav">Next Week &gt;</button>
+            </div>
+        </div>
+
+        <div class="forecast-controls">
+            <label for="editForecastToggle">
+                Enable Forecast Editing <input type="checkbox" id="editForecastToggle"> 
+            </label>
+            
+            <div id="forecastActions" class="hidden">
+                <button id="saveForecastBtn" class="btn-forecast-save" aria-label="Save Forecast Changes">
+                    <i class="fas fa-check"></i>
+                </button>
+                <button id="cancelForecastBtn" class="btn-forecast-cancel" aria-label="Cancel Forecast Changes">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
     </div>
-
-    <div style="margin-bottom: 15px; text-align: center;">
-        <label for="editForecastToggle">
-            <input type="checkbox" id="editForecastToggle"> Enable Forecast Editing
-        </label>
+    <div class="table-responsive-wrapper">
+        <table id="dailyHoursTable" border="1">
+            <thead>
+                <tr>
+                    <th>Employee<br>Name</th>
+                    <th>Assigned<br>Work Area</th>
+                    <th>SUN<br><span id="dateSun"></span></th>
+                    <th>MON<br><span id="dateMon"></span></th>
+                    <th>TUE<br><span id="dateTue"></span></th>
+                    <th>WED<br><span id="dateWed"></span></th>
+                    <th>THU<br><span id="dateThu"></span></th>
+                    <th>FRI<br><span id="dateFri"></span></th>
+                    <th>SAT<br><span id="dateSat"></span></th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
     </div>
-
-    <table id="dailyHoursTable" border="1">
-        <thead>
-            <tr>
-                <th>Employee Name</th>
-                <th>Assigned Work Area</th>
-                <th>SUN<br><span id="dateSun"></span></th>
-                <th>MON<br><span id="dateMon"></span></th>
-                <th>TUE<br><span id="dateTue"></span></th>
-                <th>WED<br><span id="dateWed"></span></th>
-                <th>THU<br><span id="dateThu"></span></th>
-                <th>FRI<br><span id="dateFri"></span></th>
-                <th>SAT<br><span id="dateSat"></span></th>
-            </tr>
-        </thead>
-        <tbody>
-            </tbody>
-    </table>
-
-    <button id="saveAllHoursBtn">Save All Hours</button>
 {% endblock %}
 
 {% block extra_body_scripts %}
-    {{ super() }} <script src="{{ url_for('static', filename='js/daily_hours_entry.js') }}"></script>
+    {{ super() }} 
+    <script src="{{ url_for('static', filename='js/daily_hours_entry.js') }}"></script>
 {% endblock %}

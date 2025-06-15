@@ -1,17 +1,19 @@
-// static/js/daily_hours_entry.js (Full and corrected code for navigation)
+// static/js/daily_hours_entry.js (with improved forecast editing workflow)
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Element Selectors ---
+    const editForecastToggle = document.getElementById('editForecastToggle');
+    const forecastActionsDiv = document.getElementById('forecastActions');
+    const saveForecastBtn = document.getElementById('saveForecastBtn');
+    const cancelForecastBtn = document.getElementById('cancelForecastBtn');
+    const dailyHoursTableBody = document.querySelector('#dailyHoursTable tbody');
+    
+    // Keep other existing element selectors...
     const weekStartDatePicker = document.getElementById('weekStartDatePicker');
     const prevWeekBtn = document.getElementById('prevWeekBtn');
     const nextWeekBtn = document.getElementById('nextWeekBtn');
     const currentWeekDisplay = document.getElementById('currentWeekDisplay');
-    const dailyHoursTableBody = document.querySelector('#dailyHoursTable tbody');
     const saveAllHoursBtn = document.getElementById('saveAllHoursBtn');
-    const statusMessageDiv = document.getElementById('statusMessage'); // NEW: For displaying messages
-    // --- NEW: Forecast Edit Toggle ---
-    const editForecastToggle = document.getElementById('editForecastToggle');
-    let forecastEditMode = false; // Initial state: forecast editing is off
-    // --- END NEW ---
-
+    const statusMessageDiv = document.getElementById('statusMessage');
     const dateSpans = {
         'dateSun': document.getElementById('dateSun'),
         'dateMon': document.getElementById('dateMon'),
@@ -22,64 +24,55 @@ document.addEventListener('DOMContentLoaded', () => {
         'dateSat': document.getElementById('dateSat'),
     };
 
+    // --- State Variables ---
     let allWorkAreas = [];
     let currentWeekData = [];
-    let currentMondayDisplayed = null; // NEW: Our single source of truth for the current week's Monday
+    let currentMondayDisplayed = null;
+
+    // --- Helper Functions (autosizeSelect, formatDate, getMondayOfWeek, etc.) ---
+    // (These functions remain the same as before, so they are omitted here for brevity)
+    // Please keep your existing helper functions in this section.
+    function autosizeSelect(selectElement) {
+        if (!selectElement) return;
+        const resize = () => {
+            const tempSpan = document.createElement('span');
+            tempSpan.style.visibility = 'hidden';
+            tempSpan.style.position = 'absolute';
+            tempSpan.style.whiteSpace = 'nowrap';
+            tempSpan.style.font = window.getComputedStyle(selectElement).font;
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            if (selectedOption) {
+                tempSpan.textContent = selectedOption.textContent;
+            } else {
+                tempSpan.textContent = '...';
+            }
+            document.body.appendChild(tempSpan);
+            selectElement.style.width = `${tempSpan.offsetWidth + 35}px`;
+            document.body.removeChild(tempSpan);
+        };
+        selectElement.addEventListener('change', resize);
+        resize();
+    }
 
     function formatDate(date) {
-        if (!date || isNaN(date.getTime())) {
-            console.error("formatDate received an invalid date:", date);
-            return null;
-        }
+        if (!date || isNaN(date.getTime())) return null;
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
-        return year + '-' + month + '-' + day;
+        return `${year}-${month}-${day}`;
     }
 
     function getMondayOfWeek(d) {
         const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
         date.setHours(0, 0, 0, 0);
-
         const day = date.getDay();
-        if (day === 0) {
-            date.setDate(date.getDate() + 1);
-        }
+        if (day === 0) date.setDate(date.getDate() + 1);
         const currentDayAfterSundayAdjustment = date.getDay();
         const daysToSubtract = currentDayAfterSundayAdjustment - 1;
         date.setDate(date.getDate() - daysToSubtract);
         return date;
     }
 
-    function updateTableHeaderDates(mondayDate) {
-        // Calculate the Sunday of *this* calendar week from the given Monday
-        const sundayOfThisCalendarWeek = new Date(mondayDate);
-        sundayOfThisCalendarWeek.setDate(mondayDate.getDate() - 1); // Go back one day from Monday to get Sunday
-
-        const daysOfWeekShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const dateObjects = [];
-        for (let i = 0; i < 7; i++) {
-            const d = new Date(sundayOfThisCalendarWeek);
-            d.setDate(sundayOfThisCalendarWeek.getDate() + i);
-            dateObjects.push(d);
-            const spanId = `date${daysOfWeekShort[i]}`;
-            if (dateSpans[spanId]) {
-                dateSpans[spanId].textContent = String(d.getDate()).padStart(2, '0');
-            } else {
-                console.error(`Element with ID '${spanId}' not found. Check HTML IDs.`);
-            }
-        }
-        // Display the Monday-Sunday range for the picker label
-        const weekEndDate = new Date(mondayDate);
-        weekEndDate.setDate(mondayDate.getDate() + 6); // Monday + 6 days = Sunday of that week
-        currentWeekDisplay.textContent = `${formatDate(mondayDate)} - ${formatDate(weekEndDate)}`;
-        
-        // No longer return sundayToFetch; fetchDailyHours now takes Monday directly.
-        // The function's purpose is now purely for header update and currentWeekDisplay.
-        // The fetchDailyHours call will use the mondayDate directly.
-    }
-
-    // Helper to parse URL query parameters
     function getUrlParameter(name) {
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
         var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
@@ -87,153 +80,140 @@ document.addEventListener('DOMContentLoaded', () => {
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
 
-    // --- NEW: Toggle Forecast Editing Function ---
-    function toggleForecastEditing() {
-        forecastEditMode = editForecastToggle.checked; // Update global state
-
-        // Handle saving forecasts when toggle is turned OFF (Call BEFORE hiding inputs)
-        if (!forecastEditMode) {
-            saveForecastedHours();
+    function updateTableHeaderDates(mondayDate) {
+        const sundayOfThisCalendarWeek = new Date(mondayDate);
+        sundayOfThisCalendarWeek.setDate(mondayDate.getDate() - 1);
+        const daysOfWeekShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(sundayOfThisCalendarWeek);
+            d.setDate(sundayOfThisCalendarWeek.getDate() + i);
+            const spanId = `date${daysOfWeekShort[i]}`;
+            if (dateSpans[spanId]) {
+                dateSpans[spanId].textContent = String(d.getDate()).padStart(2, '0');
+            }
         }
+        const weekEndDate = new Date(mondayDate);
+        weekEndDate.setDate(mondayDate.getDate() + 6);
+        currentWeekDisplay.textContent = `${formatDate(mondayDate)} - ${formatDate(weekEndDate)}`;
+    }
 
+
+    // --- NEW: Forecast Editing Workflow ---
+
+    function setForecastEditMode(isEditing) {
         const rows = dailyHoursTableBody.querySelectorAll('tr');
         rows.forEach(row => {
             row.querySelectorAll('div.actual-input-container').forEach(container => {
                 const forecastedDisplaySpan = container.querySelector('.forecasted-display');
                 const forecastedInput = container.querySelector('input[data-field="forecasted_hours"]');
-                const actualInput = container.querySelector('input[data-field="actual_hours"]'); // Get actual input reference
+                const actualInput = container.querySelector('input[data-field="actual_hours"]');
 
-                if (forecastedDisplaySpan && forecastedInput && actualInput) { // Ensure all elements exist
-                    if (forecastEditMode) { // If turning editing ON (forecasts are editable)
-                        forecastedDisplaySpan.style.display = 'none'; // Hide forecast read-only span
-                        forecastedInput.style.display = 'inline-block'; // Show forecast input
-                        actualInput.style.display = 'none'; // --- CRITICAL FIX: Hide actuals input ---
-                    } else { // If turning editing OFF (actuals are editable/default)
-                        forecastedDisplaySpan.style.display = 'inline-block'; // Show forecast read-only span
-                        forecastedInput.style.display = 'none'; // Hide forecast input
-                        actualInput.style.display = 'inline-block'; // --- CRITICAL FIX: Show actuals input ---
-                    }
+                if (forecastedDisplaySpan && forecastedInput && actualInput) {
+                    forecastedDisplaySpan.style.display = isEditing ? 'none' : 'inline-block';
+                    forecastedInput.style.display = isEditing ? 'inline-block' : 'none';
+                    actualInput.style.display = isEditing ? 'none' : 'inline-block';
                 }
             });
         });
+
+        // Show/hide action buttons
+        forecastActionsDiv.classList.toggle('hidden', !isEditing);
+        
+        // Disable the main "Save All Hours" button during forecast editing
+        saveAllHoursBtn.disabled = isEditing;
     }
 
-    // --- NEW: Save Forecasted Hours Function ---
-    async function saveForecastedHours() {
-        const forecastedEntriesToUpdate = [];
-        const rows = dailyHoursTableBody.querySelectorAll('tr');
+    editForecastToggle.addEventListener('change', () => {
+        const isEditing = editForecastToggle.checked;
+        setForecastEditMode(isEditing);
 
-        rows.forEach(row => {
-            row.querySelectorAll('div.actual-input-container').forEach(container => {
-                const forecastedInput = container.querySelector('input[data-field="forecasted_hours"]');
-
-                if (forecastedInput && forecastedInput.style.display !== 'none') { // Only process if input is visible
-                    const dailyHourId = forecastedInput.getAttribute('data-daily-hour-id');
-                    const employeeId = forecastedInput.getAttribute('data-employee-id');
-                    const workDate = forecastedInput.getAttribute('data-work-date');
-                    const overallWeekId = forecastedInput.getAttribute('data-overall-week-id');
-                    
-                    let newForecastValue = forecastedInput.value.trim();
-                    newForecastValue = newForecastValue === '' ? null : parseFloat(newForecastValue);
-
-                    // Only include in update if forecast value has changed or is being explicitly set
-                    // For simplicity, we'll send all visible forecast inputs that are numbers.
-                    forecastedEntriesToUpdate.push({
-                        daily_hour_id: dailyHourId ? parseInt(dailyHourId) : null,
-                        employee_id: parseInt(employeeId),
-                        work_date: workDate,
-                        new_forecasted_hours: newForecastValue,
-                        overall_production_week_id: overallWeekId ? parseInt(overallWeekId) : null,
-                        // Note: work_area_id is missing from here, will need to fetch from corresponding actualInput
-                    });
-                }
-            });
-        });
-
-        if (forecastedEntriesToUpdate.length === 0) {
-            console.log("No forecasted hours changed to save.");
-            return;
+        // If user unchecks the box without saving, it acts like a cancel
+        if (!isEditing) {
+            cancelForecastEditing();
         }
+    });
 
-        // --- Important: Need work_area_id for each entry. It's stored on the actualInput's <td> or a hidden input.
-        // Let's refine the loop to get work_area_id from the employee row's select.
-        // This requires getting the work_area_id from the <select> element in the first visible column of each row.
+    cancelForecastBtn.addEventListener('click', () => {
+        cancelForecastEditing();
+    });
+    
+    function cancelForecastEditing() {
+        showToast('Forecast edits have been canceled.', 'info');
+        fetchDailyHours(currentMondayDisplayed); // Re-fetch original data to discard changes
+        editForecastToggle.checked = false;
+        setForecastEditMode(false);
+    }
 
-        // Refactored collection:
-        const refactoredForecastsToSave = [];
+    saveForecastBtn.addEventListener('click', async () => {
+        const forecastsToSave = [];
         const allRows = dailyHoursTableBody.querySelectorAll('tr');
+        
         allRows.forEach(row => {
-            const employeeId = row.querySelector('input[data-employee-id]').getAttribute('data-employee-id');
-            const workAreaSelect = row.cells[1].querySelector('select'); // The work area select for the row
+            const employeeIdInput = row.querySelector('input[data-employee-id]');
+            if (!employeeIdInput) return;
+            const employeeId = employeeIdInput.getAttribute('data-employee-id');
+            const workAreaSelect = row.cells[1].querySelector('select');
             const workAreaId = workAreaSelect ? parseInt(workAreaSelect.value) : null;
 
             row.querySelectorAll('input[data-field="forecasted_hours"]').forEach(input => {
-                if (input.style.display !== 'none') { // Only process if input is visible (i.e. in edit mode)
-                    const dailyHourId = input.getAttribute('data-daily-hour-id');
-                    const workDate = input.getAttribute('data-work-date');
-                    const overallWeekId = input.getAttribute('data-overall-week-id');
-                    let newForecastValue = input.value.trim();
-                    newForecastValue = newForecastValue === '' ? null : parseFloat(newForecastValue);
+                const dailyHourId = input.getAttribute('data-daily-hour-id');
+                const workDate = input.getAttribute('data-work-date');
+                const overallWeekId = input.getAttribute('data-overall-week-id');
+                let newForecastValue = input.value.trim();
+                newForecastValue = newForecastValue === '' ? null : parseFloat(newForecastValue);
 
-                    refactoredForecastsToSave.push({
-                        daily_hour_id: dailyHourId ? parseInt(dailyHourId) : null,
-                        employee_id: parseInt(employeeId),
-                        work_date: workDate,
-                        work_area_id: workAreaId, // Include work_area_id
-                        new_forecasted_hours: newForecastValue,
-                        overall_production_week_id: overallWeekId ? parseInt(overallWeekId) : null,
-                    });
-                }
+                forecastsToSave.push({
+                    daily_hour_id: dailyHourId ? parseInt(dailyHourId) : null,
+                    employee_id: parseInt(employeeId),
+                    work_date: workDate,
+                    work_area_id: workAreaId,
+                    new_forecasted_hours: newForecastValue,
+                    overall_production_week_id: overallWeekId ? parseInt(overallWeekId) : null,
+                });
             });
         });
 
-        if (refactoredForecastsToSave.length === 0) {
-            console.log("No forecasted hours to save.");
+        if (forecastsToSave.length === 0) {
+            showToast("No forecasted hours to save.", "info");
             return;
         }
 
-        // Send to backend API
         try {
-            const response = await fetch('/api/daily-hours/update-forecasts', { // NEW API endpoint
-                method: 'PUT', // Or POST, PUT is suitable for update
+            const response = await fetch('/api/daily-hours/update-forecasts', {
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(refactoredForecastsToSave)
+                body: JSON.stringify(forecastsToSave)
             });
 
             if (response.ok) {
-                alert('Forecasted hours updated successfully!');
-                // Re-fetch data to reflect changes and re-hide inputs
-                fetchDailyHours(currentMondayDisplayed); 
+                showToast('Forecasted hours updated successfully!', 'success');
             } else {
                 const error = await response.json();
-                alert(`Error saving forecasted hours: ${error.message}`);
-                console.error('Forecasted hours save error:', error);
-                fetchDailyHours(currentMondayDisplayed); // Refresh on error
+                throw new Error(error.message);
             }
         } catch (error) {
-            console.error("Error sending forecasted hours update:", error);
-            alert(`An unexpected error occurred while saving forecasts: ${error.message}`);
-            fetchDailyHours(currentMondayDisplayed); // Refresh on network error
+            showToast(`Error saving forecasted hours: ${error.message}`, 'error');
+            console.error('Forecasted hours save error:', error);
+        } finally {
+            // This runs after success or failure
+            editForecastToggle.checked = false; // Uncheck the box
+            setForecastEditMode(false); // Hide buttons and inputs
+            fetchDailyHours(currentMondayDisplayed); // Refresh data from DB
         }
-    }
-    // --- END NEW ---
+    });
+
+    
+    // --- Data Fetching and Rendering ---
 
     async function fetchDailyHours(mondayDate) {
+        // ... (This function remains the same as before)
         const formattedMondayDate = formatDate(mondayDate);
-
-        // console.log("--- fetchDailyHours Call (Sending Monday) ---");
-        // console.log("DEBUG: Input 'mondayDate' to fetchDailyHours:", mondayDate);
-        // console.log("DEBUG: Formatted Monday Date string for API:", formattedMondayDate);
-        // console.log("DEBUG: Full API URL being requested:", `/api/daily-hours-entry?reporting_week_start_date=${formattedMondayDate}`);
-        // console.log("----------------------------");
-
         dailyHoursTableBody.innerHTML = '<tr><td colspan="9">Loading hours...</td></tr>';
         currentWeekData = [];
         statusMessageDiv.textContent = '';
         saveAllHoursBtn.disabled = true;
 
         try {
-            // Change parameter name here
             const response = await fetch(`/api/daily-hours-entry?reporting_week_start_date=${formattedMondayDate}`);
             if (!response.ok) {
                 const errorData = await response.json();
@@ -243,7 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
             currentWeekData = data.employees_data;
             allWorkAreas = data.all_work_areas;
 
-            // --- NEW: Check if overall week exists for this period ---
             if (data.current_overall_production_week_id === null) {
                 statusMessageDiv.textContent = data.message_if_no_week;
                 dailyHoursTableBody.innerHTML = '<tr><td colspan="9" style="color:gray; text-align: center;">No entries possible until Production Schedule is created.</td></tr>';
@@ -251,27 +230,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveAllHoursBtn.disabled = false;
                 renderDailyHoursTable();
             }
-            // --- END NEW ---
-
         } catch (error) {
-            console.error("Error fetching daily hours:", error);
-            alert(`Failed to load daily hours: ${error.message}`);
+            showToast(`Failed to load daily hours: ${error.message}`, 'error');
             dailyHoursTableBody.innerHTML = `<tr><td colspan="9" style="color:red;">Error loading hours: ${error.message}</td></tr>`;
-            saveAllHoursBtn.disabled = true; // Keep disabled on error
+            saveAllHoursBtn.disabled = true;
         }
     }
 
     function renderDailyHoursTable() {
+        // ... (This function remains the same as before)
         dailyHoursTableBody.innerHTML = '';
-
         currentWeekData.forEach(employee => {
             const row = dailyHoursTableBody.insertRow();
             row.insertCell(0).textContent = `${employee.first_name} ${employee.last_initial}`;
-
             const workAreaCell = row.insertCell(1);
             const workAreaSelect = document.createElement('select');
             workAreaSelect.setAttribute('data-employee-id', employee.employee_id);
             workAreaSelect.setAttribute('data-field', 'work_area_id');
+            workAreaSelect.classList.add('table-select');
 
             allWorkAreas.forEach(area => {
                 const option = document.createElement('option');
@@ -283,30 +259,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
             employee.daily_entries.forEach((entry, index) => {
                 const dayCell = row.insertCell(index + 2);
-
                 const container = document.createElement('div');
                 container.classList.add('actual-input-container');
 
-                // --- MODIFIED: Forecasted Hours Display/Edit ---
-                const forecastedDisplaySpan = document.createElement('span'); // Span for read-only display
-                forecastedDisplaySpan.classList.add('forecasted-display'); // Add class for styling
+                const forecastedDisplaySpan = document.createElement('span');
+                forecastedDisplaySpan.classList.add('forecasted-display');
                 forecastedDisplaySpan.textContent = `F: ${entry.forecasted_hours || '0.00'}`;
                 container.appendChild(forecastedDisplaySpan);
 
-                const forecastedInput = document.createElement('input'); // Input for editing forecast
+                const forecastedInput = document.createElement('input');
                 forecastedInput.type = 'number';
                 forecastedInput.step = '0.01';
                 forecastedInput.min = '0';
                 forecastedInput.value = entry.forecasted_hours || '0.00';
-                forecastedInput.style.display = 'none'; // Initially hidden
+                forecastedInput.style.display = 'none';
                 forecastedInput.setAttribute('data-daily-hour-id', entry.daily_hour_id || '');
-                forecastedInput.setAttribute('data-field', 'forecasted_hours'); // Identify as forecast input
-                // Store actual overall_production_week_id for sending forecast updates
+                forecastedInput.setAttribute('data-field', 'forecasted_hours');
                 forecastedInput.setAttribute('data-overall-week-id', entry.overall_production_week_id || '');
-                forecastedInput.setAttribute('data-employee-id', employee.employee_id); // Employee ID for this entry
-                forecastedInput.setAttribute('data-work-date', entry.work_date); // Work Date for this entry
+                forecastedInput.setAttribute('data-employee-id', employee.employee_id);
+                forecastedInput.setAttribute('data-work-date', entry.work_date);
                 container.appendChild(forecastedInput);
-                // --- END MODIFIED ---
 
                 const actualInput = document.createElement('input');
                 actualInput.type = 'number';
@@ -329,70 +301,48 @@ document.addEventListener('DOMContentLoaded', () => {
                     workAreaSelect.value = employee.primary_work_area_id;
                 }
             });
+            autosizeSelect(workAreaSelect);
         });
     }
 
-    // Event listener for week start date picker change (MANUAL SELECTION)
+    // --- Navigation and Main Save Button Listeners ---
+    // (These functions remain the same as before, so they are omitted here for brevity)
     weekStartDatePicker.addEventListener('change', () => {
-        const selectedDate = weekStartDatePicker.valueAsDate; // This is the Date object from the picker
+        const selectedDate = weekStartDatePicker.valueAsDate;
         if (selectedDate) {
-            // Get the Monday corresponding to the selected date (using JS's Date logic)
-            // This is the source of truth for the picker's displayed Monday
-            const calculatedMonday = getMondayOfWeek(selectedDate); // Re-use the existing JS helper
-
-            // console.log("--- Date Picker Change Event (Manual Selection) ---");
-            // console.log("Selected Date (from picker):", selectedDate.toISOString());
-            // console.log("Calculated Monday (getMondayOfWeek):", calculatedMonday.toISOString());
-            // console.log("-------------------------------");
-
-            weekStartDatePicker.value = formatDate(calculatedMonday); // Always snap the picker to the calculated Monday
-            currentMondayDisplayed = calculatedMonday; // Update our source of truth
-
-            // Update headers and fetch data based on this Monday
-            updateTableHeaderDates(calculatedMonday); // This sets the headers
-            fetchDailyHours(calculatedMonday); // Fetch data using the Monday date
-        } else {
-            alert("No date selected. Resetting to current week.");
-            const today = new Date();
-            const todayMonday = getMondayOfWeek(today); // Get current Monday
-            weekStartDatePicker.value = formatDate(todayMonday);
-            currentMondayDisplayed = todayMonday;
-            updateTableHeaderDates(todayMonday);
-            fetchDailyHours(todayMonday);
+            const calculatedMonday = getMondayOfWeek(selectedDate);
+            weekStartDatePicker.value = formatDate(calculatedMonday);
+            currentMondayDisplayed = calculatedMonday;
+            updateTableHeaderDates(calculatedMonday);
+            fetchDailyHours(calculatedMonday);
         }
     });
 
-    // Navigation buttons step by 7 days from the Monday displayed in the picker
     prevWeekBtn.addEventListener('click', () => {
         if (currentMondayDisplayed) {
             const newMonday = new Date(currentMondayDisplayed);
-            newMonday.setDate(currentMondayDisplayed.getDate() - 7); // Calculate the new Monday
-
-            weekStartDatePicker.value = formatDate(newMonday); // Update picker visually
-            currentMondayDisplayed = newMonday; // Update our source of truth
-
-            updateTableHeaderDates(newMonday); // Update headers
-            fetchDailyHours(newMonday); // Fetch data using the new Monday
+            newMonday.setDate(currentMondayDisplayed.getDate() - 7);
+            weekStartDatePicker.value = formatDate(newMonday);
+            currentMondayDisplayed = newMonday;
+            updateTableHeaderDates(newMonday);
+            fetchDailyHours(newMonday);
         }
     });
 
     nextWeekBtn.addEventListener('click', () => {
         if (currentMondayDisplayed) {
             const newMonday = new Date(currentMondayDisplayed);
-            newMonday.setDate(currentMondayDisplayed.getDate() + 7); // Calculate the new Monday
-
-            weekStartDatePicker.value = formatDate(newMonday); // Update picker visually
-            currentMondayDisplayed = newMonday; // Update our source of truth
-
-            updateTableHeaderDates(newMonday); // Update headers
-            fetchDailyHours(newMonday); // Fetch data using the new Monday
+            newMonday.setDate(currentMondayDisplayed.getDate() + 7);
+            weekStartDatePicker.value = formatDate(newMonday);
+            currentMondayDisplayed = newMonday;
+            updateTableHeaderDates(newMonday);
+            fetchDailyHours(newMonday);
         }
     });
 
     saveAllHoursBtn.addEventListener('click', async () => {
         const entriesToUpdate = [];
         const rows = dailyHoursTableBody.querySelectorAll('tr');
-
         rows.forEach(row => {
             const employeeId = row.querySelector('input[data-employee-id]').getAttribute('data-employee-id');
             const workAreaSelect = row.cells[1].querySelector('select');
@@ -401,13 +351,11 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let i = 2; i < row.cells.length; i++) {
                 const inputContainer = row.cells[i].querySelector('.actual-input-container');
                 const actualInput = inputContainer.querySelector('input[data-field="actual_hours"]');
-
                 if (actualInput) {
                     const dailyHourId = actualInput.getAttribute('data-daily-hour-id');
                     const workDate = actualInput.getAttribute('data-work-date');
                     const overallWeekId = actualInput.getAttribute('data-overall-week-id');
                     const forecastedHours = parseFloat(actualInput.getAttribute('data-forecasted-hours'));
-
                     let actualHoursValue = actualInput.value.trim();
                     actualHoursValue = actualHoursValue === '' ? null : parseFloat(actualHoursValue);
 
@@ -432,59 +380,40 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                alert('Daily hours saved successfully!');
-                // --- CRITICAL FIX: Pass the correct Monday from our source of truth ---
-                fetchDailyHours(currentMondayDisplayed); // Use currentMondayDisplayed
-                // --- END CRITICAL FIX ---
+                showToast('Daily hours saved successfully!', 'success');
+                fetchDailyHours(currentMondayDisplayed);
             } else {
                 const error = await response.json();
-                alert(`Error saving hours: ${error.message}`);
+                showToast(`Error saving hours: ${error.message}`, 'error');
             }
         } catch (error) {
-            console.error("Error saving daily hours:", error);
-            alert(`Failed to save daily hours: ${error.message}`);
-        } finally { // Added finally block for completeness (ensure button re-enabled)
-            // No need to re-enable here as fetchDailyHours will disable/enable
+            showToast(`Failed to save daily hours: ${error.message}`, 'error');
         }
     });
 
-    // --- NEW: Initial Load Logic (Use URL parameter if present) ---
+
+    // --- Initial Page Load Logic ---
     let initialDateFromUrl = getUrlParameter('reporting_week_start_date');
     let dateToLoad;
-
     if (initialDateFromUrl) {
         try {
-            // Attempt to parse the date from URL
-            const parsedDate = new Date(initialDateFromUrl + 'T00:00:00'); // Ensure it's treated as local midnight
-            if (!isNaN(parsedDate.getTime())) { // Check if it's a valid date
-                // Ensure it's a Monday. If not, snap to the Monday of its week.
+            const parsedDate = new Date(initialDateFromUrl + 'T00:00:00');
+            if (!isNaN(parsedDate.getTime())) {
                 dateToLoad = getMondayOfWeek(parsedDate);
-                // Also, if the parsed date wasn't a Monday, update the picker visually to the snapped Monday
                 if (formatDate(parsedDate) !== formatDate(dateToLoad)) {
-                    // Alert only if URL had a non-Monday that got snapped
-                    alert(`The provided date (${initialDateFromUrl}) is not a Monday. Displaying schedule starting ${formatDate(dateToLoad)}.`);
+                    showToast(`The provided date (${initialDateFromUrl}) is not a Monday. Displaying schedule starting ${formatDate(dateToLoad)}.`, 'error');
                 }
             } else {
-                console.warn("WARN: Invalid date format in URL parameter. Defaulting to current week.");
-                dateToLoad = getMondayOfWeek(new Date()); // Fallback to current week if URL date invalid
+                dateToLoad = getMondayOfWeek(new Date());
             }
         } catch (e) {
-            console.error("Error parsing date from URL. Defaulting to current week:", e);
-            dateToLoad = getMondayOfWeek(new Date()); // Fallback if any error during parsing
+            dateToLoad = getMondayOfWeek(new Date());
         }
     } else {
-        dateToLoad = getMondayOfWeek(new Date()); // No URL parameter, default to current week
+        dateToLoad = getMondayOfWeek(new Date());
     }
-
-    weekStartDatePicker.value = formatDate(dateToLoad); // Set picker to the determined Monday
-    currentMondayDisplayed = dateToLoad; // Update our source of truth
-
-    updateTableHeaderDates(dateToLoad); // Set initial headers
-    fetchDailyHours(dateToLoad); // Fetch initial data
-    // --- END NEW ---
-
-    // --- NEW: Forecast Edit Toggle Event Listener ---
-    editForecastToggle.addEventListener('change', toggleForecastEditing);
-    // --- END NEW ---
-
+    weekStartDatePicker.value = formatDate(dateToLoad);
+    currentMondayDisplayed = dateToLoad;
+    updateTableHeaderDates(dateToLoad);
+    fetchDailyHours(dateToLoad);
 });

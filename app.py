@@ -284,7 +284,7 @@ def positions_page():
 def production_weeks_page():
     return render_template('production_weeks.html')
 
-@app.route('/daily_hours_entry')
+@app.route('/daily-hours-entry')
 def daily_hours_entry_page():
     return render_template('daily_hours_entry.html')
 

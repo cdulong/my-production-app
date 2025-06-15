@@ -10,6 +10,8 @@ body {
     min-height: 100vh; /* Ensure body takes full viewport height */
 }
 
+
+
 h1, h2, h3, h4 {
     color: #004d40; /* Consistent heading color (dark teal) */
     margin-top: 0;
@@ -38,7 +40,6 @@ a:hover {
 
 /* --- Sidebar Styling --- */
 .sidebar {
-    width: 250px; /* Fixed width sidebar */
     background-color: #004d40; /* Dark teal background from logo */
     color: white;
     padding: 20px 0;
@@ -46,6 +47,13 @@ a:hover {
     display: flex;
     flex-direction: column;
     flex-shrink: 0; /* Prevent sidebar from shrinking */
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh; /* Full viewport height */
+    width: 250px; /* Expanded width */
+    z-index: 1020; /* High z-index */
+    transition: width 0.3s ease-in-out; /* Animate width change */
 }
 
 .sidebar-header {
@@ -53,6 +61,10 @@ a:hover {
     padding-bottom: 20px;
     margin-bottom: 20px;
     border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.sidebar-title {
+    transition: opacity 0.3s ease-in-out;
 }
 
 .sidebar-logo {
@@ -101,6 +113,26 @@ a:hover {
     color: #ffc107; /* Orange/Yellow for icons */
 }
 
+.sidebar-toggle {
+    background: none;
+    border: none;
+    font-size: 1.5em; /* Larger icon */
+    cursor: pointer;
+    color: #343a40;
+    margin-right: 15px; /* Space between button and title */
+}
+
+.sidebar-menu-item.active {
+    background-color: #004d40; /* A dark green background */
+    color: #ffffff; /* White text */
+    border-radius: 5px;
+}
+
+.sidebar-menu-item.active .fas {
+    color: #ffffff; /* White icon */
+}
+
+
 .menu-category {
     font-size: 0.9em;
     color: rgba(255,255,255,0.5); /* Very light gray for categories */
@@ -140,6 +172,8 @@ a:hover {
 .content-body {
     background-color: white; /* Match dashboard-container */
     padding: 20px;
+    flex-grow: 1;
+    overflow-y: auto;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -527,7 +561,7 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: space-around;
     padding: 25px;
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
@@ -548,29 +582,14 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
 }
 
 .dashboard-button .icon {
-    font-size: 2.5em;
-    margin-bottom: 15px;
+    font-size: 2em;
+    margin-bottom: 10px;
     color: #004d40;
 }
 
 .dashboard-button span {
-    font-size: 1.1em;
+    font-size: 1em;
     font-weight: bold;
-}
-
-/* --- Final Dashboard Button Styling --- */
-
-.dashboard-button {
-    justify-content: space-around; /* Better vertical spacing */
-}
-
-.dashboard-button .icon {
-    font-size: 2em; /* Make icons a bit smaller to give numbers room */
-    margin-bottom: 10px;
-}
-
-.dashboard-button span {
-    font-size: 1em; /* Adjust text size */
 }
 
 .button-data {
@@ -585,29 +604,6 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     font-size: 0.4em;
     font-weight: 500;
     color: #6c757d;
-}
-
-/* --- Collapsible Sidebar Styles (Corrected) --- */
-
-/* NEW: Make the body a flex container */
-body {
-    display: flex;
-    background-color: #f4f4f4; /* Ensure background covers page */
-}
-
-/* Ensure the sidebar has a fixed position and z-index */
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh; /* Full viewport height */
-    width: 250px; /* Expanded width */
-    z-index: 1020; /* High z-index */
-    transition: width 0.3s ease-in-out; /* Animate width change */
-}
-
-.sidebar-title {
-    transition: opacity 0.3s ease-in-out;
 }
 
 /* NEW: Main content container gets a margin that will change */
@@ -625,6 +621,7 @@ body {
     background-color: #fff;
     padding: 10px 20px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #dee2e6;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -633,67 +630,7 @@ body {
     z-index: 1000;
 }
 
-.sidebar-toggle {
-    background: none;
-    border: none;
-    font-size: 1.5em; /* Larger icon */
-    cursor: pointer;
-    color: #343a40;
-    margin-right: 15px; /* Space between button and title */
-}
 
-.page-title {
-    margin: 0; /* Remove default margin */
-}
-
-/* This is the main content area with padding now */
-.content-body {
-    padding: 20px;
-    flex-grow: 1;
-    overflow-y: auto;
-}
-
-
-/* --- Styles for the COLLAPSED state --- */
-body.sidebar-collapsed .sidebar {
-    width: 70px; /* Collapsed width */
-}
-
-body.sidebar-collapsed .sidebar .sidebar-logo,
-body.sidebar-collapsed .sidebar .sidebar-title,
-body.sidebar-collapsed .sidebar .sidebar-menu-item span,
-body.sidebar-collapsed .sidebar .menu-category {
-    opacity: 0; /* Fade out text and logo */
-    width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-body.sidebar-collapsed .sidebar .sidebar-menu-item {
-    justify-content: center; /* Center the icon */
-}
-
-body.sidebar-collapsed .sidebar .sidebar-menu-item .fas {
-    margin-right: 0; /* Remove margin when text is hidden */
-    font-size: 1.4em; /* Make icons slightly larger when collapsed */
-}
-
-body.sidebar-collapsed .content-container {
-    margin-left: 70px; /* Match collapsed sidebar width */
-    width: calc(100% - 70px);
-}
-
-/* --- Active Sidebar Link Style --- */
-
-.sidebar-menu-item.active {
-    background-color: #004d40; /* A dark green background */
-    color: #ffffff; /* White text */
-    border-radius: 5px;
-}
-
-.sidebar-menu-item.active .fas {
-    color: #ffffff; /* White icon */
-}
 
 /* --- Action Button Container Styling --- */
 .action-buttons {
@@ -740,3 +677,368 @@ body.sidebar-collapsed .content-container {
 .toast.info {
     background-color: #17a2b8; /* Blue */
 }
+
+/* --- Positions Page Table Adjustments --- */
+#positionsTable th, 
+#positionsTable td {
+    padding: 10px 12px; /* Standardize padding for a cleaner look */
+    vertical-align: middle; /* Ensure content is vertically centered */
+}
+
+/* Tighter width and centered text for Order and ID columns */
+#positionsTable th:nth-child(1),
+#positionsTable td:nth-child(1),
+#positionsTable th:nth-child(2),
+#positionsTable td:nth-child(2) {
+    text-align: center;
+    width: 8%; /* Assign a smaller percentage of the width */
+}
+
+/* Left-align the title */
+#positionsTable th:nth-child(3),
+#positionsTable td:nth-child(3) {
+    text-align: left;
+}
+
+/* Center the Default Hours */
+#positionsTable th:nth-child(4),
+#positionsTable td:nth-child(4) {
+    text-align: center;
+    width: 20%;
+}
+
+/* Adjust the Actions column to fit the buttons snugly */
+#positionsTable th:nth-child(5),
+#positionsTable td:nth-child(5) {
+    text-align: right;
+    width: 15%; /* Allocate a bit more space for actions */
+}
+
+/* --- Work Areas Page Table Adjustments --- */
+#workAreasTable th, 
+#workAreasTable td {
+    padding: 10px 12px;
+    vertical-align: middle;
+}
+
+/* Tighter width and centered text for Order and ID columns */
+#workAreasTable th:nth-child(1),
+#workAreasTable td:nth-child(1),
+#workAreasTable th:nth-child(2),
+#workAreasTable td:nth-child(2) {
+    text-align: center;
+    width: 8%;
+}
+
+/* Left-align the Work Area Name */
+#workAreasTable th:nth-child(3),
+#workAreasTable td:nth-child(3) {
+    text-align: left;
+}
+
+/* Center the Offset Days */
+#workAreasTable th:nth-child(4),
+#workAreasTable td:nth-child(4) {
+    text-align: center;
+    width: 20%;
+}
+
+/* Adjust the Actions column */
+#workAreasTable th:nth-child(5),
+#workAreasTable td:nth-child(5) {
+    text-align: right;
+    width: 15%;
+}
+
+/* --- Daily Hours Entry Table Adjustments  --- */
+
+.table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto; /* Allow horizontal scrolling */
+    overflow-y: hidden; /* Prevent vertical scrolling in this container */
+    max-height: none; /* Let the main content body handle vertical scroll */
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.table-responsive-wrapper .forecast-controls {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 20; /* Give it a high z-index to stay on top */
+}
+
+/* Make the table header stick BELOW the forecast bar */
+.table-responsive-wrapper #dailyHoursTable thead th {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 64px; /* Adjust this value to the height of your forecast bar */
+    z-index: 10;
+}
+
+/* This is the key change: force the table to obey our strict widths */
+#dailyHoursTable {
+    width: 100%;
+    min-width: auto; /* Remove min-width to allow shrinking */
+    table-layout: auto; /* Allow table to size columns based on content again */
+    border: none;
+    border-collapse: separate; /* Needed for sticky headers to have a background */
+    border-spacing: 0;
+}
+
+/* Reduce padding to save space */
+#dailyHoursTable th,
+#dailyHoursTable td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+    text-align: center;
+    word-wrap: break-word; /* Allow text to wrap if needed */
+    white-space: nowrap; /* Prevent wrapping in cells */
+}
+
+/* Define percentage widths for each column */
+#dailyHoursTable th:nth-child(1),
+#dailyHoursTable td:nth-child(1) {
+    width: 20%; /* Employee Name */
+    text-align: left;
+}
+
+#dailyHoursTable th:nth-child(2),
+#dailyHoursTable td:nth-child(2) {
+    width: 20%; /* Assigned Work Area */
+    text-align: left;
+}
+
+
+
+/* All day columns (from the 3rd column onwards) */
+#dailyHoursTable th:nth-child(n+3),
+#dailyHoursTable td:nth-child(n+3) {
+    width: 8.5%; /* (100 - 20 - 20) / 7 days = ~8.5% */
+}
+
+/* Make input fields fill the entire (very small) cell */
+#dailyHoursTable input[type="number"] {
+    width: 80px;
+    padding: 6px;
+    box-sizing: border-box;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    -moz-appearance: textfield; /* Hide number spinners in Firefox */
+}
+
+
+/* Hide number input spinners in Chrome, Safari, Edge */
+#dailyHoursTable input::-webkit-outer-spin-button,
+#dailyHoursTable input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+/* --- Daily Hours Entry Dropdown Styling --- */
+#dailyHoursTable select.table-select {
+    width: 100%; /* Start by filling the cell */
+    padding: 6px 4px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white; /* Ensure it has a background */
+    -webkit-appearance: none; /* Remove default system appearance */
+    -moz-appearance: none;
+    appearance: none;
+    /* Add custom dropdown arrow */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007BFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E');
+    background-repeat: no-repeat;
+    background-position: right 8px top 50%;
+    background-size: .65em auto;
+    padding-right: 25px; /* Make room for the arrow */
+}
+
+/* --- Daily Hours Entry Navigation Button Styles (v2) --- */
+
+.week-navigation {
+    display: flex;
+    flex-direction: column; /* Stack the rows vertically */
+    align-items: center;   /* Center the rows horizontally */
+    gap: 15px;             /* Adds space between the top and bottom rows */
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.week-navigation .nav-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 15px;
+}
+
+/* Style the top row (date picker) */
+.week-navigation .nav-row:nth-child(1) {
+    justify-content: center;
+}
+
+/* Style the bottom row (buttons and text) */
+.week-navigation .nav-row:nth-child(2) {
+    justify-content: space-between;
+}
+
+/* Remove default margins from the paragraph tag */
+.week-navigation p {
+    margin: 0;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #343a40;
+}
+
+/* Button styles remain the same but are included for completeness */
+.btn-nav {
+    padding: 8px 16px;
+    border: 1px solid #6c757d;
+    background-color: #fff;
+    color: #343a40;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-nav:hover {
+    background-color: #e9ecef;
+    border-color: #6c757d;
+    color: #343a40;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Target the date picker within the navigation container */
+.week-navigation input[type="date"] {
+    /* These styles make it look like other inputs */
+    padding: 7px 10px;
+    border: 1px solid #6c757d;
+    background-color: #fff;
+    color: #343a40;
+    border-radius: 5px;
+    font-size: 1em;
+    font-family: inherit;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+/* --- Forecast Edit Controls --- */
+.forecast-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    height: 40px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #e9ecef; /* A light grey background to stand out */
+    border-radius: 8px;
+    flex-direction: row;
+}
+
+.forecast-controls label {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* THIS IS THE NEW RULE THAT FIXES THE STACKING */
+#forecastActions {
+    display: flex; /* Makes the button container a flexbox */
+    gap: 10px;     /* Adds a small space between the two buttons */
+}
+
+#forecastActions.hidden {
+    display: none;
+}
+
+/* Styling for the new Save/Cancel buttons */
+#forecastActions button {
+    width: 40px;   /* Make the button square */
+    height: 40px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    font-size: 1.3em; /* Make the icon larger */
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-forecast-save {
+    background-color: #28a745; /* Green */
+}
+
+.btn-forecast-save:hover {
+    background-color: #218838;
+}
+
+.btn-forecast-cancel {
+    background-color: #6c757d; /* Grey */
+}
+
+.btn-forecast-cancel:hover {
+    background-color: #5a6268;
+}
+
+
+/* Update the main header to use flexbox for alignment */
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Space between toggle button and title */
+}
+
+.header-right {
+    /* This container will hold our action buttons */
+}
+
+/* Style for the new primary action button */
+.btn-primary-action {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    background-color: #28a745; /* A nice green for "Save" */
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+}
+
+.btn-primary-action:hover {
+    background-color: #218838; /* Darker green on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn-primary-action:disabled {
+    background-color: #6c757d; /* Greyed out when disabled */
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+
+/* Fix for the hour entry box stacking */
+.actual-input-container {
+    display: flex;
+    flex-direction: column; /* This forces forecast text and input box to stack vertically */
+    align-items: center;
+    gap: 4px;
+}
+

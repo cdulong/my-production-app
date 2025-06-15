@@ -38,10 +38,17 @@
 
     <div class="content-container" id="main-content">
         <header class="main-header">
-            <button class="sidebar-toggle" id="sidebar-toggle">
-                <i class="fas fa-bars"></i>
-            </button>
-            <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+            <!-- Left side of the header -->
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+            </div>
+            <!-- Right side of the header for action buttons -->
+            <div class="header-right">
+                {% block header_actions %}{% endblock %}
+            </div>
         </header>
         
         <main class="content-body">

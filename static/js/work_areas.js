@@ -33,60 +33,63 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     let editingWorkAreaId = null;
+    let sortable = null;
 
     async function fetchWorkAreas() {
         try {
-            // This API call now fetches work areas sorted by display_order
             const response = await fetch('/api/work-areas');
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(`HTTP error! status: ${response.status}, Message: ${errorData.message || 'Unknown error'}`);
             }
             const workAreas = await response.json();
-            tableBody.innerHTML = ''; // Clear existing rows
+            tableBody.innerHTML = '';
+
+            if (workAreas.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5">No work areas created yet.</td></tr>';
+                return;
+            }
 
             workAreas.forEach(area => {
                 const row = tableBody.insertRow();
-                row.setAttribute('data-id', area.work_area_id); // CRITICAL: Store work area ID on the row
+                row.setAttribute('data-id', area.work_area_id);
 
-                // --- NEW DEBUG LOG ---
-                console.log("DEBUG: Work Area Name:", area.work_area_name, "Computed Display Order:", area.display_order);
-                // --- END NEW DEBUG LOG ---
+                row.insertCell(0).textContent = area.display_order;
+                row.insertCell(1).textContent = area.work_area_id;
+                row.insertCell(2).textContent = area.work_area_name;
+                row.insertCell(3).textContent = area.reporting_week_start_offset_days;
 
-                // NEW: Order column
-                row.insertCell(0).textContent = area.display_order; // Display the order
-                row.insertCell(1).textContent = area.work_area_id; // ID
-                row.insertCell(2).textContent = area.work_area_name; // Work Area Name
-                row.insertCell(3).textContent = area.reporting_week_start_offset_days; // Offset
-                //row.insertCell(4).textContent = area.contributing_duration_days; // Contributing Duration
+                const actionsCell = row.insertCell(4);
 
-                const actionsCell = row.insertCell(4); // Actions column (adjusted index)
+                // --- START: CORRECTED BUTTON WRAPPER LOGIC ---
+                // 1. Create a wrapper div and apply the .action-buttons class.
+                const buttonWrapper = document.createElement('div');
+                buttonWrapper.className = 'action-buttons';
+                
+                // 2. Align this specific wrapper to the right.
+                buttonWrapper.style.justifyContent = 'flex-end';
 
-                actionsCell.style.display = 'flex';
-                actionsCell.style.gap = '5px'; // Space between buttons
-                actionsCell.style.justifyContent = 'flex-end'; // Align buttons to the right
-                actionsCell.style.alignItems = 'center'; // Vertically center buttons
-                actionsCell.style.flexWrap = 'nowrap'; // Prevent buttons from wrapping
-
-                // ... (existing button creation for edit/delete) ...
                 const editButton = document.createElement('button');
-                editButton.innerHTML = '<i class="fas fa-pencil"></i>'; // Pencil Icon
-                editButton.ariaLabel = 'Edit Work Area'; // Accessibility
+                editButton.innerHTML = '<i class="fas fa-pencil"></i>';
+                editButton.ariaLabel = 'Edit Work Area';
                 editButton.onclick = () => editWorkArea(area);
-                editButton.classList.add('edit-btn'); // Class for specific styling (green)
+                editButton.classList.add('edit-btn');
                 editButton.style.cssText = commonButtonStyleInline;
-                actionsCell.appendChild(editButton);
+                buttonWrapper.appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
-                deleteButton.innerHTML = '<i class="fas fa-trash-can"></i>'; // Trash Can Icon
-                deleteButton.ariaLabel = 'Delete Work Area'; // Accessibility
+                deleteButton.innerHTML = '<i class="fas fa-trash-can"></i>';
+                deleteButton.ariaLabel = 'Delete Work Area';
                 deleteButton.onclick = () => deleteWorkArea(area.work_area_id);
-                deleteButton.classList.add('delete-btn'); // Class for specific styling (red)
+                deleteButton.classList.add('delete-btn');
                 deleteButton.style.cssText = commonButtonStyleInline;
-                actionsCell.appendChild(deleteButton);
+                buttonWrapper.appendChild(deleteButton);
+
+                // 3. Append the single wrapper div to the table cell.
+                actionsCell.appendChild(buttonWrapper);
+                // --- END: CORRECTED BUTTON WRAPPER LOGIC ---
             });
 
-            // After rendering the table, re-initialize Sortable.js
             initializeSortable();
 
         } catch (error) {
@@ -98,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const workAreaName = workAreaNameField.value.trim();
-        const offsetDays = offsetDaysField.value; // It's already number type due to input type="number"
+        const offsetDays = offsetDaysField.value;
 
         if (!workAreaName || offsetDays === "") {
             showToast('Please fill in all required fields.', 'error');
@@ -149,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editingWorkAreaId = null;
         saveButton.textContent = 'Save Work Area';
         cancelButton.style.display = 'none';
-        workAreaIdField.value = ''; // Clear hidden ID field
+        workAreaIdField.value = '';
     });
 
     async function deleteWorkArea(id) {
@@ -173,34 +176,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Initialize Sortable.js
     const workAreasTableBody = document.getElementById('workAreasTableBody');
-    let sortable = null; // Declare sortable variable in a scope accessible to onEnd
-
-    // Function to initialize/reinitialize Sortable.js after table is rendered
+    
     function initializeSortable() {
-        if (sortable) { // Destroy old instance if it exists
+        if (sortable) {
             sortable.destroy();
         }
         sortable = Sortable.create(workAreasTableBody, {
-            animation: 150, // ms, animation speed
-            draggable: 'tr', // Makes the entire <tr> element draggable
-            ghostClass: 'sortable-ghost', // Class name for the drop placeholder
+            animation: 150,
+            draggable: 'tr',
+            ghostClass: 'sortable-ghost',
             onEnd: async function (evt) {
-                // This event fires when drag-and-drop is finished
                 const newOrder = [];
-                // Iterate through the reordered rows to get their new sequence
                 workAreasTableBody.querySelectorAll('tr').forEach((row, index) => {
                     newOrder.push({
-                        work_area_id: parseInt(row.getAttribute('data-id')), // Get work area ID from data-id attribute
-                        order: index // New order is simply its index in the list
+                        work_area_id: parseInt(row.getAttribute('data-id')),
+                        order: index
                     });
                 });
 
-                console.log('New work area order:', newOrder);
-
                 try {
-                    const response = await fetch('/api/work-areas/reorder', { // Call the new backend reorder API
+                    const response = await fetch('/api/work-areas/reorder', {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(newOrder)
@@ -208,30 +204,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (response.ok) {
                         showToast('Work Area order updated successfully!', 'success');
-                        // Refresh the table to show updated display_order numbers
                         fetchWorkAreas();
                     } else {
                         const error = await response.json();
                         showToast(`Error updating order: ${error.message}`, 'error');
-                        // If save fails, re-fetch to revert to original order
                         fetchWorkAreas();
                     }
                 } catch (error) {
                     console.error("Error saving new order:", error);
                     showToast(`Failed to save new order: ${error.message}`, 'error');
-                    fetchWorkAreas(); // Revert to original order on error
+                    fetchWorkAreas();
                 }
             }
         });
-        console.log("Sortable.js initialized:", sortable); // Confirm initialization
     }
 
-    // Initial load: Fetch work areas and then initialize Sortable.js
-    // Refactor fetchWorkAreas to ensure Sortable.js is initialized AFTER table rendering
-    const originalFetchWorkAreasFunction = fetchWorkAreas; // Store original reference
-    fetchWorkAreas = async function() {
-        await originalFetchWorkAreasFunction(); // Run original fetchWorkAreas logic
-        initializeSortable(); // Then initialize Sortable.js
-    };
-    fetchWorkAreas(); // Call the refactored one for initial load
+    fetchWorkAreas();
 });

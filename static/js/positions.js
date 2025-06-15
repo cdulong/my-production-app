@@ -53,41 +53,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
             positions.forEach(pos => {
                 const row = positionsTableBody.insertRow();
-                // --- CRITICAL FIX: Explicitly convert position_id to string for data-id ---
-                row.setAttribute('data-id', String(pos.position_id)); // Ensure it's set as a string "5", "6", etc.
-                // --- END CRITICAL FIX ---
+                row.setAttribute('data-id', String(pos.position_id)); 
 
-                row.insertCell(0).textContent = pos.display_order; // Display the order
-                row.insertCell(1).textContent = pos.position_id; // ID
-                row.insertCell(2).textContent = pos.title; // Title
-                row.insertCell(3).textContent = pos.default_hours; // Default Hours
+                row.insertCell(0).textContent = pos.display_order;
+                row.insertCell(1).textContent = pos.position_id;
+                row.insertCell(2).textContent = pos.title;
+                row.insertCell(3).textContent = pos.default_hours;
 
-                const actionsCell = row.insertCell(4); // Actions column (adjusted index)
+                const actionsCell = row.insertCell(4);
 
-                actionsCell.style.display = 'flex';
-                actionsCell.style.gap = '5px'; // Space between buttons
-                actionsCell.style.justifyContent = 'flex-end'; // Align buttons to the right
-                actionsCell.style.alignItems = 'center'; // Vertically center buttons
-                actionsCell.style.flexWrap = 'nowrap'; // Prevent buttons from wrapping
+                // --- START: CORRECTED BUTTON WRAPPER LOGIC ---
+                // 1. Create a wrapper div and apply the .action-buttons class.
+                const buttonWrapper = document.createElement('div');
+                buttonWrapper.className = 'action-buttons';
+                
+                // 2. We can align this specific wrapper to the right if needed.
+                buttonWrapper.style.justifyContent = 'flex-end';
 
                 const editButton = document.createElement('button');
-                editButton.innerHTML = '<i class="fas fa-pencil"></i>'; // Pencil Icon
-                editButton.ariaLabel = 'Edit Position'; // Accessibility
+                editButton.innerHTML = '<i class="fas fa-pencil"></i>';
+                editButton.ariaLabel = 'Edit Position';
                 editButton.onclick = () => editPosition(pos);
-                editButton.classList.add('edit-btn'); // Class for specific styling (green)
+                editButton.classList.add('edit-btn');
                 editButton.style.cssText = commonButtonStyleInline;
-                actionsCell.appendChild(editButton);
+                buttonWrapper.appendChild(editButton); // Append button to wrapper
 
                 const deleteButton = document.createElement('button');
-                deleteButton.innerHTML = '<i class="fas fa-trash-can"></i>'; // Trash Can Icon
-                deleteButton.ariaLabel = 'Delete Position'; // Accessibility
+                deleteButton.innerHTML = '<i class="fas fa-trash-can"></i>';
+                deleteButton.ariaLabel = 'Delete Position';
                 deleteButton.onclick = () => deletePosition(pos.position_id);
-                deleteButton.classList.add('delete-btn'); // Class for specific styling (red)
+                deleteButton.classList.add('delete-btn');
                 deleteButton.style.cssText = commonButtonStyleInline;
-                actionsCell.appendChild(deleteButton);
+                buttonWrapper.appendChild(deleteButton); // Append button to wrapper
+
+                // 3. Append the single wrapper div to the table cell.
+                actionsCell.appendChild(buttonWrapper);
+                // --- END: CORRECTED BUTTON WRAPPER LOGIC ---
             });
 
-            // After rendering the table, re-initialize Sortable.js
             initializeSortable();
 
         } catch (error) {
@@ -102,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = titleField.value.trim();
         const defaultHours = parseFloat(defaultHoursField.value);
 
-        // Basic validation
         if (!title || isNaN(defaultHours) || defaultHours < 0) {
             showToast('Please fill in a valid position title and non-negative default hours.', 'error');
             return;
@@ -124,8 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 form.reset();
                 editingPositionId = null;
                 saveButton.textContent = 'Save Position';
-                cancelButton.style.display = 'none'; // Hide cancel button
-                fetchPositions(); // Refresh table
+                cancelButton.style.display = 'none';
+                fetchPositions();
             } else {
                 const error = await response.json();
                 showToast(`Error saving position: ${error.message}`, 'error');
@@ -143,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         titleField.value = pos.title;
         defaultHoursField.value = pos.default_hours;
         saveButton.textContent = 'Update Position';
-        cancelButton.style.display = 'inline-block'; // Show cancel button
+        cancelButton.style.display = 'inline-block';
     }
 
     // Function to cancel editing
@@ -166,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 showToast('Position deleted successfully!', 'success');
-                fetchPositions(); // Refresh table
+                fetchPositions();
             } else {
                 const error = await response.json();
                 showToast(`Error deleting position: ${error.message}`, 'error');
@@ -177,38 +179,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Initial load
-    fetchPositions();
-
     // Initialize Sortable.js
     function initializeSortable() {
-        if (sortable) { // Destroy old instance if it exists
+        if (sortable) {
             sortable.destroy();
         }
         sortable = Sortable.create(positionsTableBody, {
-            animation: 150, // ms, animation speed
-            draggable: 'tr', // Makes the entire <tr> element draggable
-            ghostClass: 'sortable-ghost', // Class name for the drop placeholder
+            animation: 150,
+            draggable: 'tr',
+            ghostClass: 'sortable-ghost',
             onEnd: async function (evt) {
-                // This event fires when drag-and-drop is finished
                 const newOrder = [];
-                // Iterate through the reordered rows to get their new sequence
                 positionsTableBody.querySelectorAll('tr').forEach((row, index) => {
-                    const positionIdRaw = row.getAttribute('data-id'); // Get the raw attribute value
-                    const parsedPositionId = parseInt(positionIdRaw); // Attempt to parse it
-
-                    console.log(`DEBUG: Row index ${index} - Raw data-id: "${positionIdRaw}", Parsed ID: ${parsedPositionId}, Order: ${index}`);
-
+                    const positionIdRaw = row.getAttribute('data-id');
+                    const parsedPositionId = parseInt(positionIdRaw);
                     newOrder.push({
-                        position_id: parsedPositionId, // Use the parsed value (will be NaN if input was "null")
-                        order: index // New order is simply its index in the list
+                        position_id: parsedPositionId,
+                        order: index
                     });
                 });
 
-                console.log('DEBUG: New position order being sent (JSON String):', JSON.stringify(newOrder));
-
                 try {
-                    const response = await fetch('/api/positions/reorder', { // Call the new backend reorder API
+                    const response = await fetch('/api/positions/reorder', {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(newOrder)
@@ -216,30 +208,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (response.ok) {
                         showToast('Position order updated successfully!', 'success');
-                        // Refresh the table to show updated display_order numbers
                         fetchPositions();
                     } else {
                         const error = await response.json();
                         showToast(`Error updating order: ${error.message}`, 'error');
-                        // If save fails, re-fetch to revert to original order
                         fetchPositions();
                     }
                 } catch (error) {
                     console.error("Error saving new order:", error);
                     showToast(`Failed to save new order: ${error.message}`, 'error');
-                    fetchPositions(); // Revert to original order on error
+                    fetchPositions();
                 }
             }
         });
-        console.log("Sortable.js initialized:", sortable); // Confirm initialization
     }
 
-    // Initial load: Fetch positions and then initialize Sortable.js
-    // Refactor fetchPositions to ensure Sortable.js is initialized AFTER table rendering
-    const originalFetchPositionsFunction = fetchPositions; // Store original reference
-    fetchPositions = async function() {
-        await originalFetchPositionsFunction(); // Run original fetchPositions logic
-        initializeSortable(); // Then initialize Sortable.js
-    };
-    fetchPositions(); // Call the refactored one for initial load
+    // Initial load
+    fetchPositions();
 });
