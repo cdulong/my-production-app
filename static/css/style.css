@@ -769,14 +769,6 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     z-index: 20; /* Give it a high z-index to stay on top */
 }
 
-/* Make the table header stick BELOW the forecast bar */
-.table-responsive-wrapper #dailyHoursTable thead th {
-    position: -webkit-sticky;
-    position: sticky;
-    top: 64px; /* Adjust this value to the height of your forecast bar */
-    z-index: 10;
-}
-
 /* This is the key change: force the table to obey our strict widths */
 #dailyHoursTable {
     width: 100%;

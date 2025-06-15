@@ -246,27 +246,24 @@ class Position(db.Model):
 # --- Frontend Serving Routes ---
 @app.route('/')
 def index():
-    # This function is now corrected with the right column names.
-    # The temporary print statements have been removed.
+    today = date.today()
+
+    this_months_hours = db.session.query(
+        db.func.sum(DailyEmployeeHours.actual_hours)
+    ).filter(
+        extract('month', DailyEmployeeHours.work_date) == today.month,
+        extract('year', DailyEmployeeHours.work_date) == today.year
+    ).scalar() or 0
 
     total_employees = Employee.query.filter(Employee.employment_end_date == None).count()
     total_work_areas = WorkArea.query.count()
     total_positions = Position.query.count()
 
-    today = date.today()
-    
-    # Use the correct column names: 'actual_hours' and 'work_date'
-    todays_hours = db.session.query(
-        db.func.sum(DailyEmployeeHours.actual_hours)
-    ).filter(
-        DailyEmployeeHours.work_date == today
-    ).scalar() or 0
-
     return render_template('index.html',
                            total_employees=total_employees,
                            total_work_areas=total_work_areas,
                            total_positions=total_positions,
-                           todays_hours=todays_hours)
+                           this_months_hours=this_months_hours)
 
 @app.route('/work_areas')
 def work_areas_page():
