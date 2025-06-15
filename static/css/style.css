@@ -811,8 +811,6 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     text-align: left;
 }
 
-
-
 /* All day columns (from the 3rd column onwards) */
 #dailyHoursTable th:nth-child(n+3),
 #dailyHoursTable td:nth-child(n+3) {
