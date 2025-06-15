@@ -173,7 +173,7 @@ a:hover {
     background-color: white; /* Match dashboard-container */
     padding: 20px;
     flex-grow: 1;
-    overflow-y: auto;
+    /* overflow-y: auto; */
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -752,23 +752,6 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
 
 /* --- Daily Hours Entry Table Adjustments  --- */
 
-.table-responsive-wrapper {
-    width: 100%;
-    overflow-x: auto; /* Allow horizontal scrolling */
-    overflow-y: hidden; /* Prevent vertical scrolling in this container */
-    max-height: none; /* Let the main content body handle vertical scroll */
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.table-responsive-wrapper .forecast-controls {
-    position: -webkit-sticky;
-    position: sticky;
-    top: 0;
-    z-index: 20; /* Give it a high z-index to stay on top */
-}
-
 /* This is the key change: force the table to obey our strict widths */
 #dailyHoursTable {
     width: 100%;
@@ -1032,3 +1015,12 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     gap: 4px;
 }
 
+/* --- Daily Hours Entry - Final Sticky Header --- */
+
+#dailyHoursTable > thead > tr > th {
+    position: -webkit-sticky; /* For Safari compatibility */
+    position: sticky;
+    top: 58px; /* The height of your main page header */
+    background: #f2f2f2;
+    z-index: 1; /* Ensures the header stays on top of the table body */
+}
