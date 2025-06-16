@@ -86,18 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             schedules.forEach(schedule => { // Iterating through 'schedule'
-                // console.log("Processing schedule ID:", schedule.overall_production_week_id);
                 const row = tableBody.insertRow();
                 row.id = `week-row-${schedule.overall_production_week_id}`;
                 
                 // --- Insert all data cells in order ---
                 // Cell 0: ID (Read-only)
                 row.insertCell().textContent = schedule.overall_production_week_id;
-                // console.log(`  - Added ID: ${schedule.overall_production_week_id}`);
 
                 // Cell 1: Reporting Schedule (Start - End) (Read-only)
                 row.insertCell().textContent = `${schedule.reporting_week_start_date} - ${schedule.reporting_week_end_date}`;
-                // console.log(`  - Added Reporting Schedule: ${schedule.reporting_week_start_date} - ${schedule.reporting_week_end_date}`);
 
                 // Cell 2: Forecasted Product Value (Editable)
                 const forecastedProductValueCell = row.insertCell();
@@ -109,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 fpvInput.value = schedule.forecasted_product_value || '';
                 fpvInput.style.display = 'none'; // Hidden by default
                 forecastedProductValueCell.appendChild(fpvInput);
-                // console.log(`  - Added Forecasted Product Value: ${schedule.forecasted_product_value}`);
 
                 // Cell 3: Actual Product Value (Editable)
                 const actualProductValueCell = row.insertCell();
@@ -121,19 +117,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 apvInput.value = schedule.actual_product_value || '';
                 apvInput.style.display = 'none';
                 actualProductValueCell.appendChild(apvInput);
-                // console.log(`  - Added Actual Product Value: ${schedule.actual_product_value}`);
 
                 // Cell 4: Forecasted $/HR (Read-only)
                 const forecastedDphCell = row.insertCell();
                 forecastedDphCell.classList.add('read-only-calculated');
                 forecastedDphCell.textContent = schedule.forecasted_dollars_per_hour || '-';
-                // console.log(`  - Added Forecasted $/HR: ${schedule.forecasted_dollars_per_hour}`);
 
                 // Cell 5: Actual $/HR (Read-only)
                 const actualDphCell = row.insertCell();
                 actualDphCell.classList.add('read-only-calculated');
                 actualDphCell.textContent = schedule.actual_dollars_per_hour || '-';
-                // console.log(`  - Added Actual $/HR: ${schedule.actual_dollars_per_hour}`);
 
                 // Cell 6: Forecasted Boxes Built (Editable)
                 const forecastedBoxesBuiltCell = row.insertCell();
@@ -145,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 fbbInput.value = schedule.forecasted_boxes_built || '';
                 fbbInput.style.display = 'none';
                 forecastedBoxesBuiltCell.appendChild(fbbInput);
-                // console.log(`  - Added Forecasted Boxes: ${schedule.forecasted_boxes_built}`);
 
                 // Cell 7: Actual Boxes Built (Editable)
                 const actualBoxesBuiltCell = row.insertCell();
@@ -157,36 +149,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 abbInput.value = schedule.actual_boxes_built || '';
                 abbInput.style.display = 'none';
                 actualBoxesBuiltCell.appendChild(abbInput);
-                // console.log(`  - Added Actual Boxes: ${schedule.actual_boxes_built}`);
 
                 // Cell 8: Forecasted Total Production Hours (Read-only)
                 const forecastedTotalHrsCell = row.insertCell();
                 forecastedTotalHrsCell.classList.add('read-only-calculated');
                 forecastedTotalHrsCell.textContent = schedule.forecasted_total_production_hours || '-';
-                // console.log(`  - Added Forecasted Total Hrs: ${schedule.forecasted_total_production_hours}`);
 
                 // Cell 9: Actual Total Production Hours (Read-only)
                 const actualTotalHrsCell = row.insertCell();
                 actualTotalHrsCell.classList.add('read-only-calculated');
                 actualTotalHrsCell.textContent = schedule.actual_total_production_hours || '-';
-                // console.log(`  - Added Actual Total Hrs: ${schedule.actual_total_production_hours}`);
-
 
                 // --- Cell 10: Actions (Last Cell) ---
                 const actionsCell = row.insertCell(); 
-                actionsCell.style.cssText = `
-                    display: flex;
-                    gap: 5px;
-                    justify-content: flex-end;
-                    align-items: center;
-                    flex-wrap: nowrap;
-                    min-width: 150px;
-                    box-sizing: border-box;
-                    padding: 8px;
-                `;
-                
-                // --- Append buttons directly to actionsCell ---
 
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.display = 'flex';
+                buttonContainer.style.gap = '5px';
+                buttonContainer.style.justifyContent = 'flex-end';
+                buttonContainer.style.alignItems = 'center';
+                buttonContainer.style.flexWrap = 'nowrap';
+                
                 const viewDatesButton = document.createElement('button');
                 // NEW: Use innerHTML for icon, add aria-label
                 viewDatesButton.innerHTML = '<i class="fa-solid fa-calendar-days"></i>'; // Calendar Icon
@@ -194,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 viewDatesButton.onclick = () => window.showContributingDates(schedule.reporting_week_start_date);
                 viewDatesButton.classList.add('view-dates-btn');
                 viewDatesButton.style.cssText = commonButtonStyleInline;
-                actionsCell.appendChild(viewDatesButton);
+                buttonContainer.appendChild(viewDatesButton);
 
                 const goToDailyEntryButton = document.createElement('button');
                 // NEW: Use innerHTML for icon, add aria-label
@@ -205,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 goToDailyEntryButton.onclick = () => {
                     window.location.href = `/daily-hours-entry?reporting_week_start_date=${schedule.reporting_week_start_date}`;
                 };
-                actionsCell.appendChild(goToDailyEntryButton);
+                buttonContainer.appendChild(goToDailyEntryButton);
 
                 const editButton = document.createElement('button');
                 // NEW: Use innerHTML for icon, add aria-label
@@ -214,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 editButton.classList.add('edit-btn');
                 editButton.onclick = () => window.enableEditMode(schedule.overall_production_week_id);
                 editButton.style.cssText = commonButtonStyleInline;
-                actionsCell.appendChild(editButton);
+                buttonContainer.appendChild(editButton);
 
                 const saveButton = document.createElement('button');
                 // NEW: Use innerHTML for icon, add aria-label
@@ -224,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveButton.onclick = () => window.saveProductionWeek(schedule.overall_production_week_id);
                 saveButton.style.cssText = commonButtonStyleInline;
                 saveButton.style.display = 'none'; // Hide on initial load
-                actionsCell.appendChild(saveButton);
+                buttonContainer.appendChild(saveButton);
 
                 const cancelButton = document.createElement('button');
                 // NEW: Use innerHTML for icon, add aria-label
@@ -234,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cancelButton.onclick = () => window.disableEditMode(schedule.overall_production_week_id, true);
                 cancelButton.style.cssText = commonButtonStyleInline;
                 cancelButton.style.display = 'none'; // Hide on initial load
-                actionsCell.appendChild(cancelButton);
+                buttonContainer.appendChild(cancelButton);
 
                 const deleteButton = document.createElement('button');
                 // NEW: Use innerHTML for icon, add aria-label
@@ -243,9 +226,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 deleteButton.classList.add('delete-btn');
                 deleteButton.onclick = () => window.deleteProductionSchedule(schedule.overall_production_week_id);
                 deleteButton.style.cssText = commonButtonStyleInline;
-                actionsCell.appendChild(deleteButton);
+                buttonContainer.appendChild(deleteButton);
+
+                actionsCell.appendChild(buttonContainer);
             });
-            // console.log("--- END: Finished rendering all schedules. ---");
 
         } catch (error) {
             console.error("CRITICAL ERROR in fetchProductionWeeks (Full Page Logic):", error);

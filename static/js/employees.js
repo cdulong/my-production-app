@@ -93,14 +93,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(8).textContent = emp.default_forecasted_daily_hours; // Adjusted index
                 const actionsCell = row.insertCell(9); // Adjusted index
 
-                // --- CRITICAL FIX: Apply Flexbox to the actions cell ---
-                actionsCell.style.display = 'flex';
-                actionsCell.style.gap = '5px'; // Space between buttons
-                actionsCell.style.justifyContent = 'flex-end'; // Align buttons to the right
-                actionsCell.style.alignItems = 'center'; // Vertically center buttons
-                actionsCell.style.flexWrap = 'nowrap'; // Prevent buttons from wrapping
-                // min-width for this cell is already handled by CSS #employeesTable th:nth-child(10)
-                // --- END CRITICAL FIX --
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.display = 'flex';
+                buttonContainer.style.gap = '5px';
+                buttonContainer.style.justifyContent = 'flex-end';
+                buttonContainer.style.alignItems = 'center';
+                buttonContainer.style.flexWrap = 'nowrap';
                 
                 const editButton = document.createElement('button');
                 editButton.innerHTML = '<i class="fas fa-pencil"></i>'; // Pencil Icon
@@ -108,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 editButton.onclick = () => editEmployee(emp);
                 editButton.classList.add('edit-btn'); // Class for specific styling (green)
                 editButton.style.cssText = commonButtonStyleInline;
-                actionsCell.appendChild(editButton);
+                buttonContainer.appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
                 deleteButton.innerHTML = '<i class="fas fa-trash-can"></i>'; // Trash Can Icon
@@ -116,7 +114,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 deleteButton.onclick = () => deleteEmployee(emp.employee_id);
                 deleteButton.classList.add('delete-btn'); // Class for specific styling (red)
                 deleteButton.style.cssText = commonButtonStyleInline;
-                actionsCell.appendChild(deleteButton);
+                buttonContainer.appendChild(deleteButton);
+
+                actionsCell.appendChild(buttonContainer);
+
             });
 
             // After rendering the table, re-initialize Sortable.js

@@ -1024,3 +1024,11 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     background: #f2f2f2;
     z-index: 1; /* Ensures the header stays on top of the table body */
 }
+
+#employeesTable > thead > tr > th {
+    position: -webkit-sticky; /* For Safari compatibility */
+    position: sticky;
+    top: 58px; /* The height of your main page header */
+    background: #f2f2f2;
+    z-index: 1; /* Ensures the header stays on top of the table body */
+}
