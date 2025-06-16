@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         form.reset();
         editingWorkAreaId = null;
         saveButton.textContent = 'Save Work Area';
-        cancelButton.style.display = 'none';
+        // cancelButton.style.display = 'none';
         workAreaIdField.value = '';
     });
 

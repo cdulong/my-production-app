@@ -262,13 +262,11 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelButton.addEventListener('click', () => {
         form.reset();
         forecastedHoursDisplay.textContent = '';
-        // --- NEW: Clear employment date fields ---
-        employmentStartDateField.value = '';
+         employmentStartDateField.value = '';
         employmentEndDateField.value = '';
-        // --- END NEW ---
         editingEmployeeId = null;
         saveButton.textContent = 'Save Employee';
-        cancelButton.style.display = 'none';
+        // cancelButton.style.display = 'none';
         employeeIdField.value = '';
     });
 

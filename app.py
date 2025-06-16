@@ -103,6 +103,7 @@ def calculate_dollars_per_hour(value, hours):
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(60), nullable=False)
 
     def get_id(self):
@@ -1367,7 +1368,9 @@ def get_monthly_company_actuals_report():
 @api_login_required
 def email_chart_report():
     data = request.get_json()
-    recipient = data.get('recipient')
+    # OLD Way: recipient = data.get('recipient')
+    recipient = current_user.email
+
     image_data_base64 = data.get('image_data') # Base64 string of the chart image
     subject = data.get('subject', 'Monthly Report')
     # --- NEW: Receive report summaries from frontend ---
@@ -1375,8 +1378,11 @@ def email_chart_report():
     employee_summary_html = data.get('employee_summary_html', '') # HTML string of the employee table
     # --- END NEW ---
 
-    if not recipient or not image_data_base64:
-        return jsonify({'message': 'Missing recipient or image data'}), 400
+    # Add checks for missing data
+    if not recipient:
+        return jsonify({'message': 'Your account does not have an email address.'}), 400
+    if not image_data_base64:
+        return jsonify({'message': 'Missing image data'}), 400
 
     try:
         # Decode Base64 image data

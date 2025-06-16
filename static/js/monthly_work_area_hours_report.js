@@ -8,10 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const chartMessageDiv = document.getElementById('chartMessage');
     const emailChartReportBtn = document.getElementById('emailChartReportBtn');
 
-    // --- NEW: Sorting state variables for Employee Table ---
     let employeeSortBy = 'display_order'; // Default sort column
     let employeeSortDirection = 'asc'; // Default sort direction
-    // --- END NEW ---
 
     function getMonthName(monthNumber) {
         const date = new Date();
@@ -33,8 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return '#333'; // Neutral
     }
 
-    // Helper to populate the year filter dropdown
-    function populateYearFilter() {
+     function populateYearFilter() {
         const currentYear = new Date().getFullYear();
         // Add options for current year, past 5 years, and future 1 year
         for (let year = currentYear - 5; year <= currentYear + 1; year++) {
@@ -48,8 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Helper to get filter parameters for API calls
-    function getFilterParams() {
+     function getFilterParams() {
         let params = '';
         if (last12MonthsFilter.checked) {
             params += `last_12_months=true`;
@@ -62,8 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return params;
     }
 
-    // --- Toggle Function for Work Area Year Details (Work Area -> Year) ---
-    // Defined here to be easily callable globally via window.
     window.toggleWorkAreaYearDetails = function(workAreaName, summaryRow) {
         const sanitizedWorkAreaName = workAreaName.replace(/\s+/g, '-').replace(/\//g, '-');
         const detailRows = document.querySelectorAll(`.year-details-of-${sanitizedWorkAreaName}`); // Selects year summary rows under this work area
@@ -99,16 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // --- Toggle Function for Year Monthly Details (Year -> Month) ---
-    // Defined here to be easily callable globally via window.
     window.toggleYearMonthlyDetails = function(year, summaryRow) { // This is for Work Area monthly details (Level 3)
-        // Get the work area name from the work area summary row (parent of year summary row)
-        // Use a more robust way to find the closest work area summary row for context
         const closestWorkAreaSummaryRow = summaryRow.previousElementSibling.closest('.work-area-summary-row') || summaryRow.closest('.work-area-summary-row');
         const workAreaName = closestWorkAreaSummaryRow.getAttribute('data-work-area-name');
         const sanitizedWorkAreaName = workAreaName.replace(/\s+/g, '-').replace(/\//g, '-');
-        
-        // Select only monthly details under that year, and for this specific work area
         const detailRows = document.querySelectorAll(
             `.year-details-of-${year}` + // All monthly details of this year
             `.work-area-monthly-details-of-${sanitizedWorkAreaName}` // AND for this specific work area
@@ -137,9 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-
-    // --- Toggle Function for Employee Details (already existing) ---
-    // Defined here to be easily callable globally via window.
     window.toggleEmployeeDetails = function(employeeName, summaryRow) {
         const sanitizedEmployeeName = employeeName.replace(/\s+/g, '-').replace(/\//g, '-');
         const detailRows = document.querySelectorAll(`.employee-details-of-${sanitizedEmployeeName}`);
@@ -184,272 +169,218 @@ document.addEventListener('DOMContentLoaded', () => {
         return colors[colorIndex++ % colors.length];
     }
 
-    // --- NEW: Print Chart to PDF Function ---
     async function printChartToPDF() {
-        const chartCanvas = document.getElementById('monthlyWorkAreaChart');
-        const chartContainerDiv = chartCanvas.parentElement; // The div with width/height styles
+        showToast('Generating PDF...', 'info');
 
-        if (!chartCanvas || !window.html2canvas || !window.jspdf.jsPDF) {
-            showToast('PDF generation libraries not loaded or chart not ready.', 'error');
-            console.error('PDF generation libraries or chart not ready.');
-            return;
-        }
+        setTimeout(async () => {
+            const chartCanvas = document.getElementById('monthlyWorkAreaChart');
+            const chartContainerDiv = chartCanvas.parentElement; // The div with width/height styles
 
-        // Disable button during process to prevent multiple clicks
-        const originalButtonText = printChartToPDFBtn.textContent;
-        printChartToPDFBtn.textContent = 'Generating PDF...';
-        printChartToPDFBtn.disabled = true;
-
-        try {
-            // Use html2canvas to capture the content of the chart's container div
-            // This ensures the chart title and any legends rendered by Chart.js are captured well.
-            const canvas = await html2canvas(chartContainerDiv, {
-                scale: 5, // Increase scale for higher resolution in PDF
-                useCORS: true, // Important if Chart.js loads external images (unlikely here, but good practice)
-                logging: false // Disable html2canvas logs if desired
-            });
-
-            const imgData = canvas.toDataURL('image/png'); // Get image data from canvas
-
-            // Initialize jsPDF
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('landscape', 'in', 'letter'); // 'landscape' orientation, 'in' units, 'letter' size (8.5x11 inches)
-
-            // Get PDF page dimensions in chosen units (inches)
-            const pdfWidth = pdf.internal.pageSize.getWidth();  // Will be 11 inches for landscape letter
-            const pdfHeight = pdf.internal.pageSize.getHeight(); // Will be 8.5 inches for landscape letter
-
-            // Calculate image dimensions to fit PDF page
-            const imgAspectRatio = canvas.width / canvas.height;
-            let imgWidth = pdfWidth; // Start by assuming image fills width
-            let imgHeight = pdfWidth / imgAspectRatio; // Calculate height based on this width
-
-            // If the calculated height exceeds the PDF page height, scale by height instead
-            if (imgHeight > pdfHeight) {
-                imgHeight = pdfHeight; // Image fills height
-                imgWidth = pdfHeight * imgAspectRatio; // Calculate width based on this height
+            if (!chartCanvas || !window.html2canvas || !window.jspdf.jsPDF) {
+                showToast('PDF generation libraries not loaded or chart not ready.', 'error');
+                console.error('PDF generation libraries or chart not ready.');
+                return;
             }
 
-            // Calculate position to center the image on the PDF page
-            const x = (pdfWidth - imgWidth) / 2;
-            const y = (pdfHeight - imgHeight) / 2;
+            // Disable button during process to prevent multiple clicks
+            const originalButtonText = printChartToPDFBtn.textContent;
+            printChartToPDFBtn.textContent = 'Generating PDF...';
+            printChartToPDFBtn.disabled = true;
 
-            // Add image to PDF
-            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            try {
+                // Use html2canvas to capture the content of the chart's container div
+                // This ensures the chart title and any legends rendered by Chart.js are captured well.
+                const canvas = await html2canvas(chartContainerDiv, {
+                    scale: 5, // Increase scale for higher resolution in PDF
+                    useCORS: true, // Important if Chart.js loads external images (unlikely here, but good practice)
+                    logging: false // Disable html2canvas logs if desired
+                });
 
-            // Save the PDF
-            pdf.save('Monthly_Work_Area_Report.pdf');
+                const imgData = canvas.toDataURL('image/png'); // Get image data from canvas
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('landscape', 'in', 'letter'); // 'landscape' orientation, 'in' units, 'letter' size (8.5x11 inches)
+                const pdfWidth = pdf.internal.pageSize.getWidth();  // Will be 11 inches for landscape letter
+                const pdfHeight = pdf.internal.pageSize.getHeight(); // Will be 8.5 inches for landscape letter
+                const imgAspectRatio = canvas.width / canvas.height;
+                let imgWidth = pdfWidth; // Start by assuming image fills width
+                let imgHeight = pdfWidth / imgAspectRatio; // Calculate height based on this width
 
-        } catch (error) {
-            console.error("Error generating PDF:", error);
-            showToast(`Failed to generate PDF: ${error.message}`,'error');
-        } finally {
-            printChartToPDFBtn.textContent = originalButtonText;
-            printChartToPDFBtn.disabled = false;
-        }
+                if (imgHeight > pdfHeight) {
+                    imgHeight = pdfHeight; // Image fills height
+                    imgWidth = pdfHeight * imgAspectRatio; // Calculate width based on this height
+                }
+
+                const x = (pdfWidth - imgWidth) / 2;
+                const y = (pdfHeight - imgHeight) / 2;
+
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.save('Monthly_Work_Area_Report.pdf');
+
+            } catch (error) {
+                showToast(`Failed to generate PDF: ${error.message}`,'error');
+            } finally {
+                printChartToPDFBtn.textContent = originalButtonText;
+                printChartToPDFBtn.disabled = false;
+            }
+        }, 50);
     }
-    // --- END NEW ---
 
     // --- NEW: Email Chart Report Function ---
     async function emailChartReport() {
-        const chartCanvas = document.getElementById('monthlyWorkAreaChart');
-        const chartContainerDiv = chartCanvas.parentElement;
-        const workAreaTable = document.getElementById('monthlyHoursReportTable'); // Get the Work Area table (full HTML)
-        const employeeTable = document.getElementById('monthlyEmployeeHoursReportTable'); // Get the Employee table (for summary extraction)
+        showToast('Generating report image...','info');
 
-        if (!chartCanvas || !window.html2canvas || !workAreaTable || !employeeTable) {
-            showToast('Chart or report tables not ready for email. Please ensure data is loaded.','error');
-            console.error('Chart or report tables not found for email generation.');
-            return;
-        }
+        setTimeout(async () => {
+            const chartCanvas = document.getElementById('monthlyWorkAreaChart');
+            const chartContainerDiv = chartCanvas.parentElement;
+            const workAreaTable = document.getElementById('monthlyHoursReportTable'); // Get the Work Area table (full HTML)
+            const employeeTable = document.getElementById('monthlyEmployeeHoursReportTable'); // Get the Employee table (for summary extraction)
 
-        const recipientEmail = prompt("Please enter recipient email address:", "admin@example.com");
-        if (!recipientEmail) {
-            return;
-        }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
-            showToast('Please enter a valid email address.','error');
-            return;
-        }
+            if (!chartCanvas || !window.html2canvas || !workAreaTable || !employeeTable) {
+                showToast('Chart or report tables not ready for email. Please ensure data is loaded.','error');
+                console.error('Chart or report tables not found for email generation.');
+                return;
+            }
 
-        const originalButtonText = emailChartReportBtn.textContent;
-        emailChartReportBtn.textContent = 'Sending...';
-        emailChartReportBtn.disabled = true;
+            const originalButtonText = emailChartReportBtn.textContent;
+            emailChartReportBtn.textContent = 'Sending...';
+            emailChartReportBtn.disabled = true;
 
-        try {
-            // 1. Capture chart as image
-            const canvas = await html2canvas(chartContainerDiv, {
-                scale: 2, // Scale 2 for email image
-                useCORS: true,
-                willReadFrequently: true,
-                logging: false
-            });
-            const chartImageData = canvas.toDataURL('image/png');
+            try {
+                // 1. Capture chart as image
+                const canvas = await html2canvas(chartContainerDiv, {
+                    scale: 2, // Scale 2 for email image
+                    useCORS: true,
+                    willReadFrequently: true,
+                    logging: false
+                });
+                const chartImageData = canvas.toDataURL('image/png');
 
-            // 2. Capture HTML content of the tables
-            // --- CRITICAL FIX: Capture Work Area table content and apply conditional styling ---
-            let workAreaTableHtml = '';
-            const workAreaSummaryRowsEmail = workAreaTable.querySelectorAll('.work-area-summary-row'); // Get summary rows
-            const workAreaDetailRowsEmail = workAreaTable.querySelectorAll('.work-area-detail-row'); // Get detail rows
+                // 2. Capture HTML content of the tables
+                // --- CRITICAL FIX: Capture Work Area table content and apply conditional styling ---
+                let workAreaTableHtml = '';
+                const workAreaSummaryRowsEmail = workAreaTable.querySelectorAll('.work-area-summary-row'); // Get summary rows
+                const workAreaDetailRowsEmail = workAreaTable.querySelectorAll('.work-area-detail-row'); // Get detail rows
 
-            if (workAreaSummaryRowsEmail.length > 0) {
-                workAreaTableHtml += `
-                    <table border="1" style="border: 1px solid #ddd; width:100%; border-collapse: collapse; font-size: 13px;">
-                        <thead>
-                            <tr>
-                                <th style="text-align: left; padding: 8px; background-color: #f2f2f2;">Work Area</th>
-                                <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Forecasted Hours</th>
-                                <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Actual Hours</th>
-                                <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Variance (Hrs)</th>
-                                <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Variance (%)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
+                if (workAreaSummaryRowsEmail.length > 0) {
+                    workAreaTableHtml += `
+                        <table border="1" style="border: 1px solid #ddd; width:100%; border-collapse: collapse; font-size: 13px;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left; padding: 8px; background-color: #f2f2f2;">Work Area</th>
+                                    <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Forecasted Hours</th>
+                                    <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Actual Hours</th>
+                                    <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Variance (Hrs)</th>
+                                    <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Variance (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    // Add Work Area Summary Rows
+                    workAreaSummaryRowsEmail.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length >= 5) {
+                            const waNameText = cells[0].textContent.trim().replace(/\s*<i[^>]*><\/i>\s*/, '');
+                            const forecastText = cells[1].textContent.trim();
+                            const actualText = cells[2].textContent.trim();
+                            const varianceText = cells[3].textContent.trim();
+                            const variancePctText = cells[4].textContent.trim();
+
+                            const varianceValue = parseFloat(cells[3].getAttribute('data-variance-signed'));
+                            const variancePctValue = parseFloat(cells[4].getAttribute('data-variance-signed'));
+
+                            workAreaTableHtml += `
+                                <tr>
+                                    <td style="font-weight:bold; text-align: left; padding: 8px; border: 1px solid #ddd;">${waNameText}</td>
+                                    <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${forecastText}</td>
+                                    <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${actualText}</td>
+                                    <td style="text-align: center; padding: 8px; border: 1px solid #ddd; color: ${getVarianceValueColor(varianceValue)};">${varianceText}</td>
+                                    <td style="text-align: center; padding: 8px; border: 1px solid #ddd; color: ${getVarianceValueColor(variancePctValue)};">${variancePctText}</td>
+                                </tr>
+                            `;
+                        }
+                    });
+
+                    workAreaTableHtml += `</tbody></table>`;
+                } else {
+                    workAreaTableHtml = '<p>No work area data available.</p>';
+                }
                 
-                // Add Work Area Summary Rows
-                workAreaSummaryRowsEmail.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    if (cells.length >= 5) {
-                        const waNameText = cells[0].textContent.trim().replace(/\s*<i[^>]*><\/i>\s*/, '');
-                        const forecastText = cells[1].textContent.trim();
-                        const actualText = cells[2].textContent.trim();
-                        const varianceText = cells[3].textContent.trim();
-                        const variancePctText = cells[4].textContent.trim();
+                let employeeSummaryHtml = '';
+                const employeeSummaryRows = employeeTable.querySelectorAll('.employee-summary-row'); 
+                if (employeeSummaryRows.length > 0) {
+                    employeeSummaryHtml += `
+                        <table border="1" style="border: 1px solid #ddd; width:100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left; padding: 8px; background-color: #f2f2f2;">Employee Name</th>
+                                    <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Forecasted Hours</th>
+                                    <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Actual Hours</th>
+                                    <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Variance (Hrs)</th>
+                                    <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Variance (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    employeeSummaryRows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length >= 5) {
+                            const nameCellText = cells[0].textContent.trim().replace(/\s*<i[^>]*><\/i>\s*/, '');
+                            const forecastText = cells[1].textContent.trim();
+                            const actualText = cells[2].textContent.trim();
+                            const varianceText = cells[3].textContent.trim();
+                            const variancePctText = cells[4].textContent.trim();
 
-                        //const varianceValue = parseFloat(varianceText);
-                        //const variancePctValue = parseFloat(variancePctText);
+                            const varianceValue = parseFloat(cells[3].getAttribute('data-variance-signed'));
+                            const variancePctValue = parseFloat(cells[4].getAttribute('data-variance-signed'));
 
-                        const varianceValue = parseFloat(cells[3].getAttribute('data-variance-signed'));
-                        const variancePctValue = parseFloat(cells[4].getAttribute('data-variance-signed'));
+                            employeeSummaryHtml += `
+                                <tr>
+                                    <td style="font-weight:bold; text-align: left; padding: 8px; border: 1px solid #ddd;">${nameCellText}</td>
+                                    <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${forecastText}</td>
+                                    <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${actualText}</td>
+                                    <td style="text-align: center; padding: 8px; border: 1px solid #ddd; color: ${getVarianceValueColor(varianceValue)};">${varianceText}</td>
+                                    <td style="text-align: center; padding: 8px; border: 1px solid #ddd; color: ${getVarianceValueColor(variancePctValue)};">${variancePctText}</td>
+                                </tr>
+                            `;
+                        }
+                    });
+                    employeeSummaryHtml += `</tbody></table>`;
+                } else {
+                    employeeSummaryHtml = '<p>No employee data available.</p>';
+                }
 
-                        workAreaTableHtml += `
-                            <tr>
-                                <td style="font-weight:bold; text-align: left; padding: 8px; border: 1px solid #ddd;">${waNameText}</td>
-                                <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${forecastText}</td>
-                                <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${actualText}</td>
-                                <td style="text-align: center; padding: 8px; border: 1px solid #ddd; color: ${getVarianceValueColor(varianceValue)};">${varianceText}</td>
-                                <td style="text-align: center; padding: 8px; border: 1px solid #ddd; color: ${getVarianceValueColor(variancePctValue)};">${variancePctText}</td>
-                            </tr>
-                        `;
-                    }
+                // Send image data AND table HTML content to backend
+                const response = await fetch('/api/reports/email-monthly-report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        //recipient: recipientEmail,
+                        image_data: chartImageData,
+                        subject: 'Monthly Performance Report',
+                        work_area_summary_html: workAreaTableHtml, // Full HTML for Work Area table
+                        employee_summary_html: employeeSummaryHtml // Reconstructed HTML for Employee summary table
+                    })
                 });
 
-                // Add Work Area Detail Rows (Month/Year breakdown) - These will be hidden by default in email (no JS support)
-                /* workAreaDetailRowsEmail.forEach(row => {
-                     const cells = row.querySelectorAll('td');
-                     if (cells.length >= 5) {
-                        const monthYearText = cells[0].textContent.trim();
-                        const forecastText = cells[1].textContent.trim();
-                        const actualText = cells[2].textContent.trim();
-                        const varianceText = cells[3].textContent.trim();
-                        const variancePctText = cells[4].textContent.trim();
-
-                    // --- CRITICAL FIX: Get signed values from data-attribute ---
-                    const varianceValue = parseFloat(cells[3].getAttribute('data-variance-signed'));
-                    const variancePctValue = parseFloat(cells[4].getAttribute('data-variance-signed'));
-                    // --- END CRITICAL FIX ---
-
-                        workAreaTableHtml += `
-                            <tr style="background-color:#f0f8ff; display: none;"> <td style="text-align: left; padding-left: 60px; border: 1px solid #ddd;">${monthYearText}</td>
-                                <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${forecastText}</td>
-                                <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${actualText}</td>
-                                <td style="text-align: center; padding: 8px; border: 1px solid #ddd; color: ${getVarianceValueColor(varianceValue)};">${varianceText}</td>
-                                <td style="text-align: center; padding: 8px; border: 1px solid #ddd; color: ${getVarianceValueColor(variancePctValue)};">${variancePctText}</td>
-                            </tr>
-                        `;
-                    }
-                }); */
-
-                workAreaTableHtml += `</tbody></table>`;
-            } else {
-                workAreaTableHtml = '<p>No work area data available.</p>';
+                if (response.ok) {
+                    showToast('Report email sent successfully!','success');
+                } else {
+                    const error = await response.json();
+                    showToast(`Failed to send email: ${error.message}`,'error');
+                    console.error('Email send error:', error);
+                }
+            } catch (error) {
+                console.error("Error capturing chart or sending email:", error);
+                showToast(`An unexpected error occurred while sending email: ${error.message}`,'error');
+            } finally {
+                emailChartReportBtn.textContent = originalButtonText;
+                emailChartReportBtn.disabled = false;
             }
-            // --- END CRITICAL FIX ---
-
-
-            // --- CRITICAL FIX: Only capture employee summary rows (already done in previous step) ---
-            // ... (employeeSummaryHtml construction remains the same as previously provided, it only selects summary rows) ...
-            // The code for employeeSummaryHtml is already tailored to only get summary rows and apply styles.
-            // Just ensure the color logic is applied if it's not already there.
-            
-            // Re-adding the color logic for the employee table to ensure it's here
-            let employeeSummaryHtml = '';
-            const employeeSummaryRows = employeeTable.querySelectorAll('.employee-summary-row'); 
-            if (employeeSummaryRows.length > 0) {
-                employeeSummaryHtml += `
-                    <table border="1" style="border: 1px solid #ddd; width:100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
-                        <thead>
-                            <tr>
-                                <th style="text-align: left; padding: 8px; background-color: #f2f2f2;">Employee Name</th>
-                                <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Forecasted Hours</th>
-                                <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Actual Hours</th>
-                                <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Variance (Hrs)</th>
-                                <th style="text-align: center; padding: 8px; background-color: #f2f2f2;">Variance (%)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-                
-                employeeSummaryRows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    if (cells.length >= 5) {
-                        const nameCellText = cells[0].textContent.trim().replace(/\s*<i[^>]*><\/i>\s*/, '');
-                        const forecastText = cells[1].textContent.trim();
-                        const actualText = cells[2].textContent.trim();
-                        const varianceText = cells[3].textContent.trim();
-                        const variancePctText = cells[4].textContent.trim();
-
-                    // --- CRITICAL FIX: Get signed values from data-attribute ---
-                    const varianceValue = parseFloat(cells[3].getAttribute('data-variance-signed'));
-                    const variancePctValue = parseFloat(cells[4].getAttribute('data-variance-signed'));
-                    // --- END CRITICAL FIX ---
-
-                        employeeSummaryHtml += `
-                            <tr>
-                                <td style="font-weight:bold; text-align: left; padding: 8px; border: 1px solid #ddd;">${nameCellText}</td>
-                                <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${forecastText}</td>
-                                <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${actualText}</td>
-                                <td style="text-align: center; padding: 8px; border: 1px solid #ddd; color: ${getVarianceValueColor(varianceValue)};">${varianceText}</td>
-                                <td style="text-align: center; padding: 8px; border: 1px solid #ddd; color: ${getVarianceValueColor(variancePctValue)};">${variancePctText}</td>
-                            </tr>
-                        `;
-                    }
-                });
-                employeeSummaryHtml += `</tbody></table>`;
-            } else {
-                employeeSummaryHtml = '<p>No employee data available.</p>';
-            }
-
-            // Send image data AND table HTML content to backend
-            const response = await fetch('/api/reports/email-monthly-report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    recipient: recipientEmail,
-                    image_data: chartImageData,
-                    subject: 'Monthly Performance Report',
-                    work_area_summary_html: workAreaTableHtml, // Full HTML for Work Area table
-                    employee_summary_html: employeeSummaryHtml // Reconstructed HTML for Employee summary table
-                })
-            });
-
-            if (response.ok) {
-                showToast('Report email sent successfully!','success');
-            } else {
-                const error = await response.json();
-                showToast(`Failed to send email: ${error.message}`,'error');
-                console.error('Email send error:', error);
-            }
-        } catch (error) {
-            console.error("Error capturing chart or sending email:", error);
-            showToast(`An unexpected error occurred while sending email: ${error.message}`,'error');
-        } finally {
-            emailChartReportBtn.textContent = originalButtonText;
-            emailChartReportBtn.disabled = false;
-        }
+        }, 50);
     }
-    // --- END NEW ---
+
 
     async function renderWorkAreaHoursChart() {
         try {
@@ -1170,6 +1101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- END NEW ---
 
     printChartToPDFBtn.addEventListener('click', printChartToPDF); // NEW: Attach click handler
+    
     // --- NEW: Attach Email Report Button Listener ---
     emailChartReportBtn.addEventListener('click', emailChartReport);
     // --- END NEW ---

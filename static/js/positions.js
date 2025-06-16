@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         form.reset();
         editingPositionId = null;
         saveButton.textContent = 'Save Position';
-        cancelButton.style.display = 'none';
+        // cancelButton.style.display = 'none';
         positionIdField.value = '';
     });
 
