@@ -1,13 +1,12 @@
 # app.py
 
-print("DEBUG: This app.py file is being loaded! Version: [2025-06-10 9:21 AM]")
-
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from config import Config
 from datetime import date, timedelta
 from sqlalchemy import func, extract
+from forms import LoginForm
 import calendar # For getting day names
 
 import smtplib
@@ -18,12 +17,24 @@ from email.mime.image import MIMEImage
 from email.utils import formataddr
 import os # For environment variables
 from dotenv import load_dotenv
+
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
+from flask_bcrypt import Bcrypt
+
 load_dotenv()
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db) # Initialize Flask-Migrate
+
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login' # The route to redirect to if a user isn't logged in
+login_manager.login_message_category = 'info' # For flash messages
 
 # --- SMTP Configuration from Environment Variables ---
 SMTP_SERVER = os.environ.get('SMTP_SERVER') # e.g., 'smtp.gmail.com' for Gmail
@@ -87,6 +98,16 @@ def calculate_dollars_per_hour(value, hours):
 
 
 # --- Database Models ---
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    password_hash = db.Column(db.String(60), nullable=False)
+
+    def get_id(self):
+       return str(self.id)
+    
+
 class WorkArea(db.Model):
     __tablename__ = 'work_areas'
     work_area_id = db.Column(db.Integer, primary_key=True)
@@ -243,8 +264,13 @@ class Position(db.Model):
             'display_order': self.display_order # --- NEW: Include in to_dict ---
         }
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 # --- Frontend Serving Routes ---
 @app.route('/')
+@login_required
 def index():
     today = date.today()
 
@@ -266,30 +292,37 @@ def index():
                            this_months_hours=this_months_hours)
 
 @app.route('/work_areas')
+@login_required
 def work_areas_page():
     return render_template('work_areas.html')
 
 @app.route('/employees')
+@login_required
 def employees_page():
     return render_template('employees.html')
 
 @app.route('/positions')
+@login_required
 def positions_page():
     return render_template('positions.html')
 
 @app.route('/production_weeks')
+@login_required
 def production_weeks_page():
     return render_template('production_weeks.html')
 
 @app.route('/daily-hours-entry')
+@login_required
 def daily_hours_entry_page():
     return render_template('daily_hours_entry.html')
 
 @app.route('/reports')
+@login_required
 def reports_page():
     return render_template('reports.html')
 
 @app.route('/monthly-work-area-hours-report')
+@login_required
 def monthly_work_area_hours_report_page():
     return render_template('monthly_work_area_hours_report.html')
 
@@ -1401,6 +1434,27 @@ def email_chart_report():
     except Exception as e:
         print(f"Error sending email: {e}")
         return jsonify({'message': f'Failed to send email: {str(e)}', 'details': str(e)}), 500
+
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user and bcrypt.check_password_hash(user.password_hash, form.password.data):
+            login_user(user, remember=True)
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('index'))
+        else:
+            # In a real app, you would use flash messages here
+            print("Login Unsuccessful. Please check username and password")
+    return render_template('login.html', title='Login', form=form)
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

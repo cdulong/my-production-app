@@ -54,6 +54,7 @@ a:hover {
     width: 250px; /* Expanded width */
     z-index: 1020; /* High z-index */
     transition: width 0.3s ease-in-out; /* Animate width change */
+    box-sizing: border-box;
 }
 
 .sidebar-header {
@@ -175,6 +176,24 @@ a:hover {
 /* When sidebar is collapsed, show the small logo wrapper */
 .sidebar-collapsed .logo-small-wrapper {
   display: block;
+}
+
+/* --- Sidebar Footer & Logout Button --- */
+.sidebar-footer {
+    margin-top: auto; /* This is the magic line that pushes it to the bottom */
+    padding: 5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15); /* A faint separator line */
+}
+
+/* Controls the logout link itself */
+.sidebar-footer .sidebar-menu-item {
+    display: flex;       /* Ensures icon and text are aligned */
+    align-items: center; /* Vertically centers the icon and text */
+    width: auto;         /* Allow it to fit its container */
+
+    /* This padding will now be perfectly balanced inside the link */
+    padding: 12px 15px; 
+    border-radius: 4px;
 }
 
 .menu-category {
@@ -1198,4 +1217,102 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
 #productionWeeksTable th:last-child,
 #productionWeeksTable td:last-child {
     width: 155px; /* Give the Actions column plenty of space */
+}
+
+/* --- Login Page Styling --- */
+
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f2f5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.login-card {
+    background: white;
+    padding: 2rem 3rem;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+.login-logo {
+    max-width: 220px;
+    margin-bottom: 2.5rem;
+}
+
+.login-form {
+    /* Override general form styles to make the form container invisible */
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+}
+
+.login-form .input-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.login-form .input-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+}
+
+.login-form .form-control {
+    width: 100%;
+    padding: 15px 15px 15px 45px; /* Left padding for icon */
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-form .form-control:focus {
+    border-color: #004d40;
+    box-shadow: 0 0 0 3px rgba(0, 77, 64, 0.15);
+    outline: none;
+}
+
+.login-form .form-options {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.login-form .form-link {
+    color: #6c757d;
+    text-decoration: none;
+}
+
+.login-form .form-link:hover {
+    color: #004d40;
+    text-decoration: underline;
+}
+
+.login-form .btn-login {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    background-color: #004d40; /* Main theme color */
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.login-form .btn-login:hover {
+    background-color: #00382e; /* Darker shade on hover */
 }
