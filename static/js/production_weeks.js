@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell().textContent = schedule.overall_production_week_id;
 
                 // Cell 1: Reporting Schedule (Start - End) (Read-only)
-                row.insertCell().textContent = `${schedule.reporting_week_start_date} - ${schedule.reporting_week_end_date}`;
+                row.insertCell().textContent = `${schedule.reporting_week_start_date} -> ${schedule.reporting_week_end_date}`;
 
                 // Cell 2: Forecasted Product Value (Editable)
                 const forecastedProductValueCell = row.insertCell();

@@ -1085,3 +1085,67 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     text-decoration: none;
     cursor: pointer;
 }
+
+/* --- Production Weeks Table Layout Fix --- */
+
+/* This is the most important rule. It tells the browser to use the table's
+   and columns' widths, not the content of the cells, to lay out the table. */
+#productionWeeksTable {
+    table-layout: fixed;
+}
+
+/* This rule ensures that when the input fields appear, they fill the
+   entire width of the cell without overflowing or stretching it. */
+#productionWeeksTable td input {
+    width: 100%; /* Make input fill the cell's width */
+    box-sizing: border-box; /* Include padding and border in the width calculation */
+    margin: 0; /* Remove any default margins */
+    padding: 6px; /* Adjust padding to look good */
+    font-size: 0.9em; /* Match table font size */
+    -moz-appearance: textfield; /* Optional: Hide number spinners in Firefox */
+}
+
+/* Optional: Hide number spinners in Chrome, Safari, Edge */
+#productionWeeksTable td input::-webkit-outer-spin-button,
+#productionWeeksTable td input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* --- Production Weeks Table Column Widths --- */
+
+/* Set specific widths for columns to make room for the Actions column.
+   We target columns by their position using :nth-child(). */
+
+/* Column 1: ID */
+#productionWeeksTable th:nth-child(1),
+#productionWeeksTable td:nth-child(1) {
+    width: 35px; /* Make ID column very small */
+    text-align: center;
+}
+
+/* Column 2: Reporting Week */
+#productionWeeksTable th:nth-child(2),
+#productionWeeksTable td:nth-child(2) {
+    width: 100px;;
+} 
+
+/* Columns 3, 5, 7, 9: The "Forecast" columns */
+/* #productionWeeksTable th:nth-child(odd):not(:first-child):not(:last-child),
+#productionWeeksTable td:nth-child(odd):not(:first-child):not(:last-child) {
+    width: 8%;
+    text-align: center;
+} */
+
+/* Columns 4, 6, 8, 10: The "Actual" columns */
+/* #productionWeeksTable th:nth-child(even):not(:first-child):not(:last-child),
+#productionWeeksTable td:nth-child(even):not(:first-child):not(:last-child) {
+    width: 7%; 
+    text-align: center;
+} */
+
+/* Column 11: Actions */
+#productionWeeksTable th:last-child,
+#productionWeeksTable td:last-child {
+    width: 155px; /* Give the Actions column plenty of space */
+}
