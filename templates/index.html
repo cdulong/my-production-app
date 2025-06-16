@@ -16,17 +16,17 @@
             <div class="button-grid">
                 <a href="{{ url_for('employees_page') }}" class="dashboard-button">
                     <i class="fas fa-users icon"></i>
-                    <span>Manage Employees</span>
+                    <span>Manage<br>Employees</span>
                     <span class="button-data">{{ total_employees }}</span>
                 </a>
                 <a href="{{ url_for('positions_page') }}" class="dashboard-button">
                     <i class="fas fa-briefcase icon"></i>
-                    <span>Manage Positions</span>
+                    <span>Manage<br>Positions</span>
                     <span class="button-data">{{ total_positions }}</span>
                 </a>
                 <a href="{{ url_for('work_areas_page') }}" class="dashboard-button">
                     <i class="fas fa-industry icon"></i>
-                    <span>Manage Work Areas</span>
+                    <span>Manage<br>Work Areas</span>
                     <span class="button-data">{{ total_work_areas }}</span>
                 </a>
             </div>
@@ -41,7 +41,7 @@
                 </a>
                 <a href="{{ url_for('daily_hours_entry_page') }}" class="dashboard-button">
                     <i class="fas fa-clock icon"></i>
-                    <span>Hours Logged This Month</span>
+                    <span>Hours Logged<br>This Month</span>
                     <span class="button-data">{{ "%.2f"|format(this_months_hours) }} hrs</span>
                 </a>
             </div>
