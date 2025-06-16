@@ -7,6 +7,7 @@ from config import Config
 from datetime import date, timedelta
 from sqlalchemy import func, extract
 from forms import LoginForm
+from functools import wraps
 import calendar # For getting day names
 
 import smtplib
@@ -268,6 +269,14 @@ class Position(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def api_login_required(func):
+    @wraps(func)
+    def decorated_view(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify(message="Authentication is required to access this API."), 401
+        return func(*args, **kwargs)
+    return decorated_view
+
 # --- Frontend Serving Routes ---
 @app.route('/')
 @login_required
@@ -331,12 +340,14 @@ def monthly_work_area_hours_report_page():
 
 # Work Areas API
 @app.route('/api/work-areas', methods=['GET'])
+@api_login_required
 def get_work_areas():
     # Order by display_order, then by work_area_id as a fallback
     work_areas = WorkArea.query.order_by(WorkArea.display_order, WorkArea.work_area_id).all()
     return jsonify([wa.to_dict() for wa in work_areas])
 
 @app.route('/api/work-areas', methods=['POST'])
+@api_login_required
 def create_work_area():
     data = request.get_json()
     if not data or not 'work_area_name' in data or not 'reporting_week_start_offset_days' in data:
@@ -352,6 +363,7 @@ def create_work_area():
     return jsonify(new_work_area.to_dict()), 201
 
 @app.route('/api/work-areas/<int:id>', methods=['PUT'])
+@api_login_required
 def update_work_area(id):
     work_area = WorkArea.query.get_or_404(id)
     data = request.get_json()
@@ -366,6 +378,7 @@ def update_work_area(id):
     return jsonify(work_area.to_dict())
 
 @app.route('/api/work-areas/<int:id>', methods=['DELETE'])
+@api_login_required
 def delete_work_area(id):
     work_area = WorkArea.query.get_or_404(id)
 
@@ -380,6 +393,7 @@ def delete_work_area(id):
     return jsonify({'message': 'Work Area deleted successfully'}), 204
 
 @app.route('/api/work-areas/reorder', methods=['PUT'])
+@api_login_required
 def reorder_work_areas():
     data = request.get_json() # Expected: [{"work_area_id": 1, "order": 0}, {"work_area_id": 2, "order": 1}, ...]
     if not isinstance(data, list):
@@ -407,6 +421,7 @@ def reorder_work_areas():
         return jsonify({'message': 'An error occurred during reordering.', 'details': str(e)}), 500
 
 @app.route('/api/positions', methods=['GET'])
+@api_login_required
 def get_positions():
     """Returns a list of all available positions."""
     positions = Position.query.order_by(Position.display_order, Position.position_id).all()
@@ -414,12 +429,14 @@ def get_positions():
 
 # Employees API
 @app.route('/api/employees', methods=['GET'])
+@api_login_required
 def get_employees():
     # Order by display_order, then by employee_id as a fallback
     employees = Employee.query.order_by(Employee.display_order, Employee.employee_id).all()
     return jsonify([emp.to_dict() for emp in employees])
 
 @app.route('/api/positions', methods=['POST'])
+@api_login_required
 def create_position():
     """Creates a new position."""
     data = request.get_json()
@@ -440,6 +457,7 @@ def create_position():
         return jsonify({'message': 'Failed to create position.', 'details': str(e)}), 500
 
 @app.route('/api/positions/<int:id>', methods=['PUT'])
+@api_login_required
 def update_position(id):
     """Updates an existing position."""
     position = Position.query.get_or_404(id)
@@ -461,6 +479,7 @@ def update_position(id):
         return jsonify({'message': 'Failed to update position.', 'details': str(e)}), 500
 
 @app.route('/api/positions/<int:id>', methods=['DELETE'])
+@api_login_required
 def delete_position(id):
     """Deletes a position."""
     position = Position.query.get_or_404(id)
@@ -479,6 +498,7 @@ def delete_position(id):
         return jsonify({'message': 'Failed to delete position.', 'details': str(e)}), 500
 
 @app.route('/api/positions/reorder', methods=['PUT'])
+@api_login_required
 def reorder_positions():
     data = request.get_json() # Expected: [{"position_id": 1, "order": 0}, {"position_id": 2, "order": 1}, ...]
     if not isinstance(data, list):
@@ -506,6 +526,7 @@ def reorder_positions():
         return jsonify({'message': 'An error occurred during reordering.', 'details': str(e)}), 500
 
 @app.route('/api/employees', methods=['POST'])
+@api_login_required
 def create_employee():
     data = request.get_json()
     required_fields = ['first_name', 'last_initial', 'position_id', 'primary_work_area_id', 'employment_start_date']
@@ -542,6 +563,7 @@ def create_employee():
         return jsonify({'message': 'Failed to create employee due to a database error.', 'details': str(e)}), 500
 
 @app.route('/api/employees/<int:id>', methods=['PUT'])
+@api_login_required
 def update_employee(id):
     employee = Employee.query.get_or_404(id)
     data = request.get_json()
@@ -575,6 +597,7 @@ def update_employee(id):
         return jsonify({'message': 'Failed to save employee changes due to a database error.', 'details': str(e)}), 500
 
 @app.route('/api/employees/<int:id>', methods=['DELETE'])
+@api_login_required
 def delete_employee(id):
     employee = Employee.query.get_or_404(id)
 
@@ -586,6 +609,7 @@ def delete_employee(id):
     return jsonify({'message': 'Employee deleted successfully'}), 204
 
 @app.route('/api/employees/reorder', methods=['PUT'])
+@api_login_required
 def reorder_employees():
     data = request.get_json() # Expected: [{"employee_id": 1, "order": 0}, {"employee_id": 2, "order": 1}, ...]
     if not isinstance(data, list):
@@ -615,11 +639,13 @@ def reorder_employees():
 
 # Overall Production Weeks API
 @app.route('/api/overall-production-weeks', methods=['GET'])
+@api_login_required
 def get_overall_production_weeks():
     weeks = OverallProductionWeek.query.order_by(OverallProductionWeek.reporting_week_start_date.desc()).all()
     return jsonify([week.to_dict() for week in weeks])
 
 @app.route('/api/overall-production-weeks', methods=['POST'])
+@api_login_required
 def create_overall_production_week():
     data = request.get_json()
     if not data or not 'reporting_week_start_date' in data:
@@ -710,6 +736,7 @@ def create_overall_production_week():
         return jsonify({'message': 'An error occurred while creating the production schedule.', 'details': str(e)}), 500
 
 @app.route('/api/overall-production-weeks/<int:id>', methods=['PUT'])
+@api_login_required
 def update_overall_production_week(id):
     week = OverallProductionWeek.query.get_or_404(id)
     data = request.get_json()
@@ -733,6 +760,7 @@ def update_overall_production_week(id):
     return jsonify(week.to_dict())
 
 @app.route('/api/overall-production-weeks/<int:id>', methods=['DELETE'])
+@api_login_required
 def delete_overall_production_week(id):
     week = OverallProductionWeek.query.get_or_404(id)
 
@@ -745,6 +773,7 @@ def delete_overall_production_week(id):
 
 # Daily Employee Hours API
 @app.route('/api/daily-hours-entry', methods=['GET'])
+@api_login_required
 def get_daily_hours_for_week():
     reporting_week_start_date_str = request.args.get('reporting_week_start_date')
     if not reporting_week_start_date_str:
@@ -853,6 +882,7 @@ def get_daily_hours_for_week():
 
 
 @app.route('/api/daily-hours-entry/batch-update', methods=['POST'])
+@api_login_required
 def batch_update_daily_hours():
     data = request.get_json()
     if not isinstance(data, list):
@@ -931,6 +961,7 @@ def batch_update_daily_hours():
         return jsonify({'message': 'An unexpected error occurred during batch update.', 'details': str(e)}), 500
 
 @app.route('/api/daily-hours/update-forecasts', methods=['PUT'])
+@api_login_required
 def update_daily_forecasts():
     data = request.get_json() # Expected: list of {daily_hour_id, new_forecasted_hours, ...}
     if not isinstance(data, list):
@@ -1003,6 +1034,7 @@ def update_daily_forecasts():
 
 # Reports API
 @app.route('/api/reports/weekly-overview', methods=['GET'])
+@api_login_required
 def get_weekly_performance_overview():
     weeks = OverallProductionWeek.query.order_by(OverallProductionWeek.reporting_week_start_date.desc()).all()
 
@@ -1050,6 +1082,7 @@ def get_weekly_performance_overview():
     return jsonify(report_data)
 
 @app.route('/api/reports/monthly-work-area-hours', methods=['GET'])
+@api_login_required
 def get_monthly_work_area_hours_report():
     selected_year = request.args.get('year')
     last_12_months = request.args.get('last_12_months') == 'true'
@@ -1106,6 +1139,7 @@ def get_monthly_work_area_hours_report():
         return jsonify({'message': 'An error occurred while generating the report.', 'details': str(e)}), 500
 
 @app.route('/api/reports/monthly-employee-hours', methods=['GET'])
+@api_login_required
 def get_monthly_employee_hours_report():
     sort_by = request.args.get('sort_by', 'display_order') # Default sort by display_order
     sort_direction = request.args.get('sort_direction', 'asc') # Default sort direction ascending
@@ -1245,23 +1279,6 @@ def get_monthly_employee_hours_report():
         ).all()
         # --- END CRITICAL FIX ---
 
-        # --- DEBUGGING LOGS FOR REPORT DATA AFTER SORTING (Ensure these are present) ---
-        # print("\n--- DEBUG: Monthly Employee Report Data After Sorting ---")
-        # for row in report_data:
-        #     # Print relevant fields for debugging sort order
-        #     # Ensure numbers are converted to float before calculation/formatting for accurate print
-        #     forecasted_val = float(row.total_forecasted_hours) if row.total_forecasted_hours is not None else 0.0
-        #     actual_val = float(row.total_actual_hours) if row.total_actual_hours is not None else 0.0
-        #     variance_val = actual_val - forecasted_val # Calculate variance for printing clarity
-
-        #     print(f"  Employee: {row.first_name} {row.last_initial}, Order: {row.display_order}, "
-        #           f"Month: {row.year}-{row.month}, "
-        #           f"Forecasted: {forecasted_val:.2f}, "
-        #           f"Actual: {actual_val:.2f}, "
-        #           f"Variance_Hrs: {variance_val:.2f}")
-        # print("----------------------------------------------------\n")
-        # --- END DEBUG LOGS ---
-
         formatted_report = []
         for row in report_data:
             # Use the selected labels from the query
@@ -1289,6 +1306,7 @@ def get_monthly_employee_hours_report():
         return jsonify({'message': 'An error occurred while generating the report.', 'details': str(e)}), 500
 
 @app.route('/api/reports/monthly-company-actuals', methods=['GET'])
+@api_login_required
 def get_monthly_company_actuals_report():
     selected_year = request.args.get('year')
     last_12_months = request.args.get('last_12_months') == 'true'
@@ -1346,6 +1364,7 @@ def get_monthly_company_actuals_report():
         return jsonify({'message': 'An error occurred while generating the company actuals report.', 'details': str(e)}), 500
     
 @app.route('/api/reports/email-monthly-report', methods=['POST'])
+@api_login_required
 def email_chart_report():
     data = request.get_json()
     recipient = data.get('recipient')
