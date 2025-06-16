@@ -250,12 +250,29 @@ document.addEventListener('DOMContentLoaded', () => {
         positionField.value = emp.position_id; // Use ID to select option
         positionField.dispatchEvent(new Event('change')); // Trigger display update for forecasted hours
         primaryWorkAreaField.value = emp.primary_work_area_id;
-        // --- NEW: Pre-fill employment dates ---
         employmentStartDateField.value = emp.employment_start_date || '';
         employmentEndDateField.value = emp.employment_end_date || '';
-        // --- END NEW ---
         saveButton.textContent = 'Update Employee';
         cancelButton.style.display = 'inline-block';
+
+        // --- NEW AND IMPROVED SCROLL LOGIC ---
+        const formElement = document.getElementById('employeeForm');
+        const headerElement = document.querySelector('.main-header');
+        
+        // Calculate the height of the sticky header
+        const headerHeight = headerElement ? headerElement.offsetHeight : 0;
+        
+        // Get the position of the form relative to the viewport
+        const elementPosition = formElement.getBoundingClientRect().top;
+        
+        // Calculate the target scroll position: 
+        // current scroll position + element's top - header's height - a little extra space
+        const offsetPosition = elementPosition + window.pageYOffset - headerHeight - 20; // 15px for padding
+
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+        });
     }
 
     // Cancel editing

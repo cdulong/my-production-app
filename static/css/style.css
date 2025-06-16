@@ -1154,7 +1154,12 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
 /* This is the most important rule. It tells the browser to use the table's
    and columns' widths, not the content of the cells, to lay out the table. */
 #productionWeeksTable {
-    table-layout: fixed;
+    width: 100%;
+    min-width: auto; /* Remove min-width to allow shrinking */
+    table-layout: auto; /* Allow table to size columns based on content again */
+    border: none;
+    border-collapse: separate; /* Needed for sticky headers to have a background */
+    border-spacing: 0;
 }
 
 /* This rule ensures that when the input fields appear, they fill the
@@ -1165,6 +1170,7 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     margin: 0; /* Remove any default margins */
     padding: 6px; /* Adjust padding to look good */
     font-size: 0.9em; /* Match table font size */
+    text-align: right;
     -moz-appearance: textfield; /* Optional: Hide number spinners in Firefox */
 }
 
@@ -1181,36 +1187,69 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
    We target columns by their position using :nth-child(). */
 
 /* Column 1: ID */
-#productionWeeksTable th:nth-child(1),
-#productionWeeksTable td:nth-child(1) {
+#productionWeeksTable th:nth-child(1), #productionWeeksTable td:nth-child(1) {
     width: 35px; /* Make ID column very small */
     text-align: center;
 }
 
 /* Column 2: Reporting Week */
-#productionWeeksTable th:nth-child(2),
-#productionWeeksTable td:nth-child(2) {
-    width: 100px;;
+#productionWeeksTable th:nth-child(2), #productionWeeksTable td:nth-child(2) {
+    width: 110px;
+    text-align: left;
 } 
 
-/* Columns 3, 5, 7, 9: The "Forecast" columns */
-/* #productionWeeksTable th:nth-child(odd):not(:first-child):not(:last-child),
-#productionWeeksTable td:nth-child(odd):not(:first-child):not(:last-child) {
-    width: 8%;
+#productionWeeksTable th:nth-child(3), #productionWeeksTable td:nth-child(3) {
+    width: 75px;
     text-align: center;
-} */
+}
 
-/* Columns 4, 6, 8, 10: The "Actual" columns */
-/* #productionWeeksTable th:nth-child(even):not(:first-child):not(:last-child),
-#productionWeeksTable td:nth-child(even):not(:first-child):not(:last-child) {
-    width: 7%; 
+#productionWeeksTable th:nth-child(4), #productionWeeksTable td:nth-child(4) {
+    width: 75px;
     text-align: center;
-} */
+}
+
+#productionWeeksTable th:nth-child(5), #productionWeeksTable td:nth-child(5) {
+    width: 75px;
+    text-align: center;
+}
+
+#productionWeeksTable th:nth-child(6), #productionWeeksTable td:nth-child(6) {
+    width: 75px;
+    text-align: center;
+}
+
+#productionWeeksTable th:nth-child(7), #productionWeeksTable td:nth-child(7) {
+    width: 75px;
+    text-align: center;
+}
+#productionWeeksTable th:nth-child(8), #productionWeeksTable td:nth-child(8) {
+    width: 75px;
+    text-align: center;
+}
+#productionWeeksTable th:nth-child(9), #productionWeeksTable td:nth-child(9) {
+    width: 75px;
+    text-align: center;
+}
+#productionWeeksTable th:nth-child(10), #productionWeeksTable td:nth-child(10) {
+    width: 75px;
+    text-align: center;
+}
 
 /* Column 11: Actions */
-#productionWeeksTable th:last-child,
-#productionWeeksTable td:last-child {
+#productionWeeksTable th:nth-child(11), #productionWeeksTable td:nth-child(11) {
     width: 155px; /* Give the Actions column plenty of space */
+}
+
+#productionWeeksTable > thead > tr > th {
+    position: -webkit-sticky; /* For Safari compatibility */
+    position: sticky;
+    top: 58px; /* The height of your main page header */
+    background: #f2f2f2;
+    z-index: 1; /* Ensures the header stays on top of the table body */
+}
+
+#productionWeeksTable > thead > tr:nth-child(2) > th {
+    top: 92px;
 }
 
 /* --- Login Page Styling --- */
