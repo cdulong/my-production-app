@@ -28,6 +28,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const body = document.body;
 
+    const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isSidebarCollapsed) {
+        body.classList.add('sidebar-collapsed');
+    }
+
     if (sidebarToggle) {
 
         // Add click event listener to the toggle button

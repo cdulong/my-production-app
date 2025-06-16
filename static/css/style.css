@@ -133,6 +133,38 @@ a:hover {
 }
 
 
+.sidebar-collapsed .sidebar {
+    width: 80px; /* Width of the sidebar when collapsed */
+}
+
+/* --- NEW: Hide the entire header (which contains the logo) --- */
+.sidebar-collapsed .sidebar-header {
+    display: none;
+}
+
+.sidebar-collapsed .sidebar-title,
+.sidebar-collapsed .sidebar-menu-item span {
+    display: none; /* Hide the title and menu item text */
+}
+
+.sidebar-collapsed .sidebar-menu-item {
+    justify-content: center; /* Center the icon */
+}
+
+.sidebar-collapsed .sidebar-menu-item i {
+    margin-right: 0; /* Remove margin from the icon when text is hidden */
+}
+
+.sidebar-collapsed .menu-category {
+    display: none;
+}
+
+/* Adjust the main content margin when the sidebar is collapsed */
+.sidebar-collapsed .content-container {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+}
+
 .menu-category {
     font-size: 0.9em;
     color: rgba(255,255,255,0.5); /* Very light gray for categories */
