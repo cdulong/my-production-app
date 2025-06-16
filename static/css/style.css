@@ -501,6 +501,16 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     background-color: #0056b3;
 }
 
+/* Add this new rule to fix the 1px sticky header gap */
+#employeesTable {
+    width: 100%;
+    min-width: auto; /* Remove min-width to allow shrinking */
+    table-layout: auto; /* Allow table to size columns based on content again */
+    border: none;
+    border-collapse: separate; /* Needed for sticky headers to have a background */
+    border-spacing: 0;
+}
+
 /* --- Employee Table Specific Styles --- */
 #employeesTable th, #employeesTable td {
     padding: 6px 8px; /* Slightly tighter padding for employee table cells */
@@ -1315,4 +1325,10 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
 
 .login-form .btn-login:hover {
     background-color: #00382e; /* Darker shade on hover */
+}
+
+#positionForm,
+#workAreaForm,
+#productionWeekForm {
+    max-width: 500px;
 }

@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 });
 
-                console.log('DEBUG: New position order being sent:', JSON.stringify(newOrder)); // Use JSON.stringify
+                // console.log('DEBUG: New position order being sent:', JSON.stringify(newOrder)); // Use JSON.stringify
 
                 try {
                     const response = await fetch('/api/employees/reorder', { // Call the new backend reorder API

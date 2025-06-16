@@ -244,17 +244,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // This is necessary because functions defined inside DOMContentLoaded are not global by default.
     // Attach these to the window object.
     window.enableEditMode = function(weekId) {
-        console.log("DEBUG: enableEditMode called for weekId:", weekId);
+        // console.log("DEBUG: enableEditMode called for weekId:", weekId);
         if (editingRowId !== null && editingRowId !== weekId) {
             window.disableEditMode(editingRowId, true);
         }
         editingRowId = weekId;
         const row = document.getElementById(`week-row-${weekId}`);
-        console.log("DEBUG: Row element found:", row);
+        // console.log("DEBUG: Row element found:", row);
 
         if (row) {
             row.classList.add('editable-row');
-            console.log("DEBUG: 'editable-row' class added. Current classes:", row.classList.value);
+            // console.log("DEBUG: 'editable-row' class added. Current classes:", row.classList.value);
             
             row.querySelectorAll('td[data-field]').forEach(cell => {
                 const input = cell.querySelector('input');
@@ -268,30 +268,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (input) { // Ensure input exists
-                    console.log("DEBUG: Processing input element:", input);
-                    console.log("DEBUG: Input current display (before change):", input.style.display);
+                    // console.log("DEBUG: Processing input element:", input);
+                    // console.log("DEBUG: Input current display (before change):", input.style.display);
                     input.style.display = 'inline-block'; // Show input
-                    console.log("DEBUG: Input new display (after change):", input.style.display);
+                    // console.log("DEBUG: Input new display (after change):", input.style.display);
                 } else {
-                    console.warn("WARN: Could not find input in editable cell (this shouldn't happen). Cell:", cell);
+                    // console.warn("WARN: Could not find input in editable cell (this shouldn't happen). Cell:", cell);
                 }
             });
             // Toggle buttons
-            console.log("DEBUG: Toggling button visibility...");
+            // console.log("DEBUG: Toggling button visibility...");
             row.querySelector('.edit-btn').style.display = 'none';
             row.querySelector('.delete-btn').style.display = 'none';
             row.querySelector('.view-dates-btn').style.display = 'none';
             row.querySelector('.go-to-daily-entry-btn').style.display = 'none'; // Hide new button
             row.querySelector('.save-btn').style.display = 'inline-block';
             row.querySelector('.cancel-btn').style.display = 'inline-block';
-            console.log("DEBUG: Button visibility toggled.");
+            // console.log("DEBUG: Button visibility toggled.");
         } else {
-            console.log("DEBUG: Row not found for enableEditMode:", weekId);
+            // console.log("DEBUG: Row not found for enableEditMode:", weekId);
         }
     };
 
     window.disableEditMode = function(weekId, revertChanges = false) {
-        console.log("DEBUG: disableEditMode called for weekId:", weekId, "revertChanges:", revertChanges);
+        // console.log("DEBUG: disableEditMode called for weekId:", weekId, "revertChanges:", revertChanges);
         editingRowId = null;
         const row = document.getElementById(`week-row-${weekId}`);
         if (row) {
@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.querySelector('.go-to-daily-entry-btn').style.display = 'inline-block'; // Show new button
             row.querySelector('.save-btn').style.display = 'none';
             row.querySelector('.cancel-btn').style.display = 'none';
-            console.log("DEBUG: Button visibility toggled in disableEditMode.");
+            // console.log("DEBUG: Button visibility toggled in disableEditMode.");
         }
     };
 
@@ -436,16 +436,16 @@ document.addEventListener('DOMContentLoaded', () => {
     window.createNewProductionSchedule = async function() {
         const startDate = startDateField.value; // Access startDateField from its original scope
 
-        console.log("DEBUG: createNewProductionSchedule function called via onclick.");
-        console.log("DEBUG: Start date from picker:", startDate);
+        // console.log("DEBUG: createNewProductionSchedule function called via onclick.");
+        // console.log("DEBUG: Start date from picker:", startDate);
 
         if (!startDate) {
             showToast('Please select a start date.','error');
-            console.log("DEBUG: Start date is empty.");
+            // console.log("DEBUG: Start date is empty.");
             return;
         }
 
-        console.log("DEBUG: Attempting to send POST request to /api/overall-production-weeks with date:", startDate);
+        // console.log("DEBUG: Attempting to send POST request to /api/overall-production-weeks with date:", startDate);
         try {
             const response = await fetch('/api/overall-production-weeks', {
                 method: 'POST',
