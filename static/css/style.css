@@ -63,14 +63,10 @@ a:hover {
     border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
-.sidebar-title {
-    transition: opacity 0.3s ease-in-out;
-}
-
 .sidebar-logo {
-    max-width: 120px; /* Smaller logo in sidebar header */
-    height: auto;
-    margin-bottom: 10px;
+    max-height: 45px; /* Smaller logo in sidebar header */
+    width: auto;
+    /* margin-bottom: 10px; */
 }
 
 .sidebar-header h2 {
@@ -132,17 +128,10 @@ a:hover {
     color: #ffffff; /* White icon */
 }
 
-
 .sidebar-collapsed .sidebar {
     width: 80px; /* Width of the sidebar when collapsed */
 }
 
-/* --- NEW: Hide the entire header (which contains the logo) --- */
-.sidebar-collapsed .sidebar-header {
-    display: none;
-}
-
-.sidebar-collapsed .sidebar-title,
 .sidebar-collapsed .sidebar-menu-item span {
     display: none; /* Hide the title and menu item text */
 }
@@ -163,6 +152,29 @@ a:hover {
 .sidebar-collapsed .content-container {
     margin-left: 80px;
     width: calc(100% - 80px);
+}
+
+/* Hide the small logo wrapper by default */
+.logo-small-wrapper {
+  display: none;
+}
+
+/* Style for the small logo image */
+.logo-small {
+  width: auto;      /* Adjust size as needed */
+  height: 45px;
+  /* margin-top: 10px; /* Add some space at the top */
+  /* margin-bottom: 10px; */
+}
+
+/* When sidebar is collapsed, hide the large logo/text wrapper */
+.sidebar-collapsed .logo-text-wrapper {
+  display: none;
+}
+
+/* When sidebar is collapsed, show the small logo wrapper */
+.sidebar-collapsed .logo-small-wrapper {
+  display: block;
 }
 
 .menu-category {
@@ -554,7 +566,7 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
 }
 
 .dashboard-logo {
-    max-width: 180px;
+    max-width: 350px;
     margin-bottom: 15px;
 }
 

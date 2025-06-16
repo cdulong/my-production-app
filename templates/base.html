@@ -16,9 +16,11 @@
     </script>
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <a href="{{ url_for('index') }}">
+            <a href="{{ url_for('index') }}" class="logo-text-wrapper">
                 <img src="{{ url_for('static', filename='images/logo_FINAL-black.svg') }}" alt="Company Logo" class="sidebar-logo">
-                <h2 class="sidebar-title">Prod Dashboard</h2>
+            </a>
+            <a href="{{ url_for('index') }}" class="logo-small-wrapper">
+                <img src="{{ url_for('static', filename='images/logo_FINAL-M-black.svg') }}" alt="Small Logo" class="logo-small">
             </a>
         </div>
         <ul class="sidebar-menu">

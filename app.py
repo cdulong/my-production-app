@@ -640,16 +640,14 @@ def create_overall_production_week():
                 
                 if is_employee_active_on_day:
                     if current_date.weekday() >= 0 and current_date.weekday() <= 4: # Monday (0) to Friday (4)
-                        # --- CRITICAL FIX: Add Supervisor check ---
-                        if employee.position == "Supervisor":
+                        if employee.position_obj and employee.position_obj.title == "Supervisor":
                             forecasted_hours_for_day = 8.0
-                        elif employee.position == "Team Leader":
+                        elif employee.position_obj and employee.position_obj.title == "Team Leader":
                             forecasted_hours_for_day = 7.75
-                        elif employee.position == "Regular Staff":
+                        elif employee.position_obj and employee.position_obj.title == "Regular Staff":
                             forecasted_hours_for_day = 7.5
                         else:
                             forecasted_hours_for_day = 0.0
-                        # --- END CRITICAL FIX ---
                     else: # Saturday (5) or Sunday (6)
                         forecasted_hours_for_day = 0.0 # Forecast 0 hours for weekend
 
@@ -705,8 +703,8 @@ def update_overall_production_week(id):
 def delete_overall_production_week(id):
     week = OverallProductionWeek.query.get_or_404(id)
 
-    if DailyEmployeeHours.query.filter_by(overall_production_week_id=id).count() > 0:
-        return jsonify({'message': 'Cannot delete production schedule with associated daily hours. Delete associated daily hours first.'}), 409
+    #if DailyEmployeeHours.query.filter_by(overall_production_week_id=id).count() > 0:
+    #    return jsonify({'message': 'Cannot delete production schedule with associated daily hours. Delete associated daily hours first.'}), 409
 
     db.session.delete(week)
     db.session.commit()
@@ -1405,4 +1403,4 @@ def email_chart_report():
         return jsonify({'message': f'Failed to send email: {str(e)}', 'details': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)

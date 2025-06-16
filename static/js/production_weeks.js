@@ -402,7 +402,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.deleteProductionSchedule = async function(id) {
-        if (!confirm('Are you sure you want to delete this Production Schedule? This will also delete all associated daily hour records. This action cannot be undone.')) return;
+        const confirmationText = 'DELETE';
+        const userConfirmation = prompt(`This action cannot be undone. You will be deleting the entire production schedule and all of its associated daily hour entries.\n\nPlease type "${confirmationText}" to confirm.`);
+
+        // if (!confirm('Are you sure you want to delete this Production Schedule? This will also delete all associated daily hour records. This action cannot be undone.')) return;
+
+        if (userConfirmation === null || userConfirmation.trim() !== confirmationText) {
+            showToast('Deletion cancelled. The text must be entered exactly as "DELETE".', 'info');
+            return; // Stop the function if confirmation is not correct
+        }
 
         try {
             const response = await fetch(`/api/overall-production-weeks/${id}`, {
@@ -411,13 +419,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 showToast('Production Schedule deleted successfully!','success');
-                fetchProductionWeeks();
-                contributingDatesDisplay.innerHTML = '<p>Select a schedule from the table above to see its contributing dates per work area.</p>';
+                fetchProductionWeeks(); //Refresh the table
             } else {
+                // Handle server errors (e.g., 404, 500)
                 const error = await response.json();
                 showToast(`Error deleting production schedule: ${error.message}`,'error');
             }
         } catch (error) {
+            // Handle network errors or other enexpected issues
             console.error("Error deleting production schedule:", error);
             showToast(`Failed to delete production schedule: ${error.message}`,'error');
         }
