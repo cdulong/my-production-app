@@ -70,7 +70,19 @@ document.addEventListener('DOMContentLoaded', () => {
             reportsTableBody.innerHTML = `<tr><td colspan="13" style="color:red;">Error loading reports: ${error.message}</td></tr>`;
         }
     }
-
+    
+    // --- Print Button Functionality ---
+    const printButton = document.getElementById('printReportBtn');
+    if (printButton) {
+        printButton.addEventListener('click', () => {
+            const printStyle = document.createElement('style');
+            printStyle.innerHTML = '@page { size: landscape; margin: 0.5in; }';
+            document.head.appendChild(printStyle);
+            window.print();
+            document.head.removeChild(printStyle);
+        });
+    }
+    
     // Initial load
     fetchReports();
 });

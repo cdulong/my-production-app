@@ -1105,6 +1105,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- NEW: Attach Email Report Button Listener ---
     emailChartReportBtn.addEventListener('click', emailChartReport);
     // --- END NEW ---
+
+    // --- Print Button Functionality with Chart Resizing ---
+    const printMonthlyReportBtn = document.getElementById('printMonthlyReportBtn');
+    if (printMonthlyReportBtn) {
+        const chartContainer = document.getElementById('chartContainer');
+
+        if (chartContainer && window.monthlyWorkAreaChart) {
+            let originalHeight, originalWidth, originalMargin;
+
+            window.onbeforeprint = () => {
+                originalHeight = chartContainer.style.height;
+                originalWidth = chartContainer.style.width;
+                originalMargin = chartContainer.style.margin;
+
+                chartContainer.style.width = '800px';
+                chartContainer.style.height = 'auto';
+                chartContainer.style.margin = '20px auto';
+                
+                window.monthlyWorkAreaChart.resize();
+            };
+
+            window.onafterprint = () => {
+                chartContainer.style.height = originalHeight;
+                chartContainer.style.width = originalWidth;
+                chartContainer.style.margin = originalMargin;
+                
+                window.monthlyWorkAreaChart.resize();
+            };
+        }
+        
+        printMonthlyReportBtn.addEventListener('click', () => {
+            window.print();
+        });
+    }
     
     // --- NEW: Employee Table Header Sorting ---
     const employeeTableHeaders = document.querySelectorAll('#monthlyEmployeeHoursReportTable thead th[data-sort-by]');

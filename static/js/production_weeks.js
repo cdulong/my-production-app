@@ -38,6 +38,25 @@ document.addEventListener('DOMContentLoaded', () => {
         modalBody.innerHTML = ''; // Clear content
     }
 
+    function getVarianceClass(actual, forecast) {
+        if (actual === null || forecast === null || actual === undefined || forecast === undefined) {
+            return ''; // No class if data is missing
+        }
+        const actualNum = parseFloat(actual);
+        const forecastNum = parseFloat(forecast);
+
+        if (isNaN(actualNum) || isNaN(forecastNum)) {
+            return ''; // No class if values aren't valid numbers
+        }
+
+        if (actualNum > forecastNum) {
+            return 'variance-negative';
+        } else if (actualNum < forecastNum) {
+            return 'variance-positive';
+        }
+        return ''; // Return empty string for neutral/equal to use default color
+    }
+
     // Common inline style for buttons (basic sizing and alignment, colors from CSS)
     const commonButtonStyleInline = `
         /* Adjusted for icons */
@@ -67,21 +86,18 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     async function fetchProductionWeeks() {
-        // console.log("--- START: Fetching Production Schedules (Full Page Logic) ---");
         try {
             const response = await fetch('/api/overall-production-weeks');
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(`HTTP error! status: ${response.status}, Message: ${errorData.message || 'Unknown error'}`);
             }
-            const schedules = await response.json(); // Renamed from 'weeks' to 'schedules' for consistency
-            // console.log("API responded with data:", schedules);
+            const schedules = await response.json(); 
             tableBody.innerHTML = ''; // Clear existing rows
 
             if (schedules.length === 0) {
                 // Adjust colspan for total number of columns (11 data columns + 1 actions column = 12)
                 tableBody.innerHTML = '<tr><td colspan="12">No production schedules created yet.</td></tr>';
-                // console.log("No schedules in API response.");
                 return;
             }
 
@@ -109,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Cell 3: Actual Product Value (Editable)
                 const actualProductValueCell = row.insertCell();
+                actualProductValueCell.className = getVarianceClass(schedule.actual_product_value, schedule.forecasted_product_value);
                 actualProductValueCell.setAttribute('data-field', 'actual_product_value');
                 actualProductValueCell.setAttribute('data-original-value', schedule.actual_product_value || '');
                 actualProductValueCell.textContent = schedule.actual_product_value || '-'; // Initial text display
@@ -125,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Cell 5: Actual $/HR (Read-only)
                 const actualDphCell = row.insertCell();
-                actualDphCell.classList.add('read-only-calculated');
+                actualDphCell.className = 'read-only-calculated ' + getVarianceClass(schedule.actual_dollars_per_hour, schedule.forecasted_dollars_per_hour);
                 actualDphCell.textContent = schedule.actual_dollars_per_hour || '-';
 
                 // Cell 6: Forecasted Boxes Built (Editable)
@@ -141,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Cell 7: Actual Boxes Built (Editable)
                 const actualBoxesBuiltCell = row.insertCell();
+                actualBoxesBuiltCell.className = getVarianceClass(schedule.actual_boxes_built, schedule.forecasted_boxes_built);
                 actualBoxesBuiltCell.setAttribute('data-field', 'actual_boxes_built');
                 actualBoxesBuiltCell.setAttribute('data-original-value', schedule.actual_boxes_built || '');
                 actualBoxesBuiltCell.textContent = schedule.actual_boxes_built || '-'; // Initial text display
@@ -157,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Cell 9: Actual Total Production Hours (Read-only)
                 const actualTotalHrsCell = row.insertCell();
-                actualTotalHrsCell.classList.add('read-only-calculated');
+                actualTotalHrsCell.className = 'read-only-calculated ' + getVarianceClass(schedule.forecasted_total_production_hours, schedule.actual_total_production_hours);
                 actualTotalHrsCell.textContent = schedule.actual_total_production_hours || '-';
 
                 // --- Cell 10: Actions (Last Cell) ---

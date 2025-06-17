@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.min.css') }}">
     {% block extra_head_content %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <script>
         if (localStorage.getItem('sidebarCollapsed') === 'true') {
             document.body.classList.add('sidebar-collapsed');

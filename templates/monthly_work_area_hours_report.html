@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 
+{% block body_class %}monthly-work-area-hours-report-page-portrait{% endblock %}
+
+{% block header_actions %}
+    <button id="printMonthlyReportBtn" class="btn">
+        <i class="fas fa-print"></i> Print Report
+    </button>
+{% endblock %}
+
 {% block title %}Monthly Work Area Hours Report{% endblock %}
 
 {% block extra_head_content %}
@@ -11,7 +19,7 @@
 {% block page_title %}Monthly Work Area Hours Report{% endblock %}
 
 {% block content %}
-    <div style="margin-bottom: 20px; text-align: center;">
+    <div class="reportFilter" style="margin-bottom: 20px; text-align: center;">
         <label for="reportYearFilter">Select Year:</label>
         <select id="reportYearFilter" style="padding: 5px;">
             </select>
@@ -23,7 +31,7 @@
         <button id="applyFilterBtn" style="margin-left: 20px; padding: 5px 10px;" class="btn">Apply Filter</button>
     </div>
 
-    <div style="width: 80%; height: 450px; margin: 20px auto; position: relative;">
+    <div id="chartContainer" style="width: 80%; height: 450px; margin: 20px auto; position: relative;">
         <canvas id="monthlyWorkAreaChart" willReadFrequently="true"></canvas>
         <div id="chartMessage" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; background-color: rgba(255,255,255,0.9); align-items: center; justify-content: center; text-align: center; color: gray; font-weight: bold; z-index: 1;">
             <p>No data available to generate chart.</p>

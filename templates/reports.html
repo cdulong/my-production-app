@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 
+{% block body_class %}reports-page-landscape{% endblock %}
+
+{% block header_actions %}
+    <button id="printReportBtn" class="btn">
+        <i class="fas fa-print"></i> Print Report
+    </button>
+{% endblock %}
+
 {% block title %}Weekly Performance Reports{% endblock %}
 
 {% block page_title %}Weekly Performance Reports{% endblock %}

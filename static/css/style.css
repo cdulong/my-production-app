@@ -233,7 +233,7 @@ a:hover {
 }
 
 .content-body {
-    background-color: white; /* Match dashboard-container */
+    /* background-color: white; */
     padding: 20px;
     flex-grow: 1;
     /* overflow-y: auto; */
@@ -1379,4 +1379,58 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+}
+
+@media print {
+    /* -- General Print Rules (for ALL pages) -- */
+
+    body {
+        font-size: 10pt;
+        background-color: #fff;
+    }
+
+    /* Hide the sidebar, main header, and print button itself */
+    .sidebar, .main-header, .reportFilter, #printReportBtn, #printChartToPDFBtn, #emailChartReportBtn {
+        display: none;
+    }
+
+    /* Make the main content area take up the full page width */
+    .content-container {
+        margin-left: 0;
+        width: 100%;
+        padding: 0;
+    }
+
+    .content-body {
+        box-shadow: none; /* Remove shadow from the content body */
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Prevent table rows from splitting across pages */
+    tr {
+        page-break-inside: avoid;
+    }
+
+    #monthlyWorkAreaChart {
+        height: 100px;
+    }
+
+    /* Rules for pages that should be landscape */
+    .reports-page-landscape {
+        width: 100%;
+    }
+
+    /* Ensure the table uses the full width and reduce padding */
+    #weeklyPerformanceTable {
+        width: 100%;
+        font-size: 8pt; /* Further reduce font size in the table */
+        table-layout: auto;
+    }
+
+    #weeklyPerformanceTable th, 
+    #weeklyPerformanceTable td {
+        padding: 4px;
+    }
+
 }
