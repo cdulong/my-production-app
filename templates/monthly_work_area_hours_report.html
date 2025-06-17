@@ -1,22 +1,32 @@
 {% extends "base.html" %}
 
+{% from "macros.html" import render_notification_bell %}
+
 {% block body_class %}monthly-work-area-hours-report-page-portrait{% endblock %}
 
+{% block title %}Monthly Work Area Hours Report{% endblock %}
+
+{% block page_title %}Monthly Work Area Hours Report{% endblock %}
+
 {% block header_actions %}
-    <button id="printMonthlyReportBtn" class="btn">
-        <i class="fas fa-print"></i> Print Report
-    </button>
+    <div class="action-buttons" style="display: flex; align-items: center; gap: 20px;">
+        <button id="printMonthlyReportBtn" class="btn btn-primary-action">
+            <i class="fas fa-print"></i>
+            <span>Print Report</span>
+        </button>
+
+        {{ render_notification_bell() }}
+
+    </div>
 {% endblock %}
 
-{% block title %}Monthly Work Area Hours Report{% endblock %}
+
 
 {% block extra_head_content %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="{{ url_for('static', filename='js/html2canvas.min.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 {% endblock %}
-
-{% block page_title %}Monthly Work Area Hours Report{% endblock %}
 
 {% block content %}
     <div class="reportFilter" style="margin-bottom: 20px; text-align: center;">

@@ -1,16 +1,23 @@
 {% extends "base.html" %}
 
-{% block body_class %}reports-page-landscape{% endblock %}
+{% from "macros.html" import render_notification_bell %}
 
-{% block header_actions %}
-    <button id="printReportBtn" class="btn">
-        <i class="fas fa-print"></i> Print Report
-    </button>
-{% endblock %}
+{% block body_class %}reports-page-landscape{% endblock %}
 
 {% block title %}Weekly Performance Reports{% endblock %}
 
 {% block page_title %}Weekly Performance Reports{% endblock %}
+
+{% block header_actions %}
+    <div class="action-buttons" style="display: flex; align-items: center; gap: 20px;">
+        <button id="printReportBtn" class="btn btn-primary-action">
+            <i class="fas fa-print"></i>
+            <span>Print Report</span>
+        </button>
+        
+        {{ render_notification_bell() }}
+    </div>
+{% endblock %}
 
 {% block content %}
     <h2>Weekly Overview</h2>

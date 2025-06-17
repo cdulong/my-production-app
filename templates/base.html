@@ -59,7 +59,7 @@
             <!-- Right side of the header for action buttons -->
             <div class="header-right">
 
-                {% if request.endpoint != 'daily_hours_entry_page' %}
+                {% if request.endpoint not in ['daily_hours_entry_page', 'reports_page', 'monthly_work_area_hours_report_page'] %}
                     {{ render_notification_bell() }}
                 {% endif %}
 
