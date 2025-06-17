@@ -1,3 +1,4 @@
+{% from "macros.html" import render_notification_bell %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,6 +57,11 @@
             </div>
             <!-- Right side of the header for action buttons -->
             <div class="header-right">
+
+                {% if request.endpoint != 'daily_hours_entry_page' %}
+                    {{ render_notification_bell() }}
+                {% endif %}
+
                 {% block header_actions %}{% endblock %}
             </div>
         </header>
@@ -68,6 +74,10 @@
     <div id="toast-container"></div>
 
     {% block extra_body_scripts %}
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script>
+            var current_user_id = {{ current_user.id if current_user.is_authenticated else 'null' }};
+        </script>
         <script src="{{ url_for('static', filename='js/main.js') }}"></script>
         <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
     {% endblock %}

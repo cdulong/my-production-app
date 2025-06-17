@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify, render_template, redirect, url_for, f
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from config import Config
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from sqlalchemy import func, extract
 from forms import LoginForm
 from functools import wraps
@@ -266,6 +266,45 @@ class Position(db.Model):
             'display_order': self.display_order # --- NEW: Include in to_dict ---
         }
 
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    message = db.Column(db.String(255), nullable=False)
+    is_read = db.Column(db.Boolean, default=False, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    link = db.Column(db.String(255), nullable=True)  # URL for the notification
+
+    user = db.relationship('User', backref=db.backref('notifications', lazy=True))
+
+    def __repr__(self):
+        return f'<Notification {self.message}>'
+
+
+@app.cli.command("create-user")
+def create_user():
+    """Creates a new user."""
+    import getpass
+    username = input("Enter username: ")
+    email = input("Enter email: ")
+    password = getpass.getpass("Enter password: ")
+    confirm_password = getpass.getpass("Confirm password: ")
+
+    if password != confirm_password:
+        print("Passwords do not match.")
+        return
+
+    # Check if user already exists
+    if User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first():
+        print("User with that username or email already exists.")
+        return
+        
+    password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+    new_user = User(username=username, email=email, password_hash=password_hash)
+    
+    db.session.add(new_user)
+    db.session.commit()
+    print(f"User '{username}' created successfully.")
+          
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -336,6 +375,34 @@ def reports_page():
 def monthly_work_area_hours_report_page():
     return render_template('monthly_work_area_hours_report.html')
 
+@app.route('/get_notifications')
+@login_required
+def get_notifications():
+    notifications = Notification.query.filter_by(user_id=current_user.id, is_read=False).order_by(Notification.timestamp.desc()).all()
+    return jsonify([{
+        'id': n.id,
+        'message': n.message,
+        'link': n.link,
+        'timestamp': n.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    } for n in notifications])
+
+
+@app.before_request
+def mark_notification_as_read():
+    if not current_user.is_authenticated:
+        return
+    notification_id = request.args.get('notification_id', type=int)
+    if notification_id:
+        print(f"--- MARK AS READ DEBUG: Found notification_id={notification_id} in URL.")
+        print(f"--- MARK AS READ DEBUG: Current user ID is {current_user.id}.")
+        notification = Notification.query.filter_by(id=notification_id, user_id=current_user.id).first()
+        if notification:
+            print(f"--- MARK AS READ DEBUG: Successfully found notification object: {notification}")
+            notification.is_read = True
+            db.session.commit()
+            print("--- MARK AS READ DEBUG: Notification marked as read and committed.")
+        else:
+            print("--- MARK AS READ DEBUG: FAILED to find a matching notification for this user.")
 
 # --- API Endpoints ---
 
@@ -785,18 +852,30 @@ def get_daily_hours_for_week():
     except ValueError:
         return jsonify({'message': 'Invalid date format for reporting_week_start_date. Use THAT-MM-DD.'}), 400
 
-    if reporting_week_start_date.weekday() != 0: # 0 is Monday
+    if reporting_week_start_date.weekday() != 0:  # 0 is Monday
         return jsonify({'message': 'reporting_week_start_date must be a Monday.'}), 400
 
     calendar_week_start_date = reporting_week_start_date - timedelta(days=1)
-
     calendar_week_end_date = calendar_week_start_date + timedelta(days=6)
 
     overall_production_week = OverallProductionWeek.query.filter_by(
         reporting_week_start_date=reporting_week_start_date
     ).first()
 
-    current_overall_production_week_id = overall_production_week.overall_production_week_id if overall_production_week else None
+    if not overall_production_week:
+        return jsonify({
+            'employees_data': [],
+            'all_work_areas': [wa.to_dict() for wa in WorkArea.query.order_by(WorkArea.display_order).all()],
+            'current_overall_production_week_id': None,
+            'message_if_no_week': 'No Overall Production Schedule found for this period. Please create it first in "Manage Production Schedules".'
+        })
+
+    current_overall_production_week_id = overall_production_week.overall_production_week_id
+
+    all_entries_in_date_range = DailyEmployeeHours.query.filter(
+        DailyEmployeeHours.work_date.between(calendar_week_start_date, calendar_week_end_date)
+    ).all()
+    entries_map = {(entry.employee_id, entry.work_date): entry for entry in all_entries_in_date_range}
 
     all_employees = Employee.query.order_by(Employee.display_order, Employee.employee_id).all()
     
@@ -804,30 +883,27 @@ def get_daily_hours_for_week():
     for emp in all_employees:
         emp_start = emp.employment_start_date
         emp_end = emp.employment_end_date
-
         employee_ends_before_week_starts = emp_end and emp_end < calendar_week_start_date
         employee_starts_after_week_ends = emp_start and emp_start > calendar_week_end_date
-        
         if not employee_ends_before_week_starts and not employee_starts_after_week_ends:
             active_employees_for_week.append(emp)
     
     employees_to_process = active_employees_for_week
 
-
-    work_areas = {wa.work_area_id: wa.to_dict() for wa in WorkArea.query.all()}
-
     ordered_work_areas = WorkArea.query.order_by(WorkArea.display_order, WorkArea.work_area_id).all()
+    
+    # --- THIS LINE IS NOW CORRECTED ---
     all_work_areas_for_response = [wa.to_dict() for wa in ordered_work_areas]
+    # --- END CORRECTION ---
 
     response_data = []
-
     for employee in employees_to_process:
         employee_data = {
             'employee_id': employee.employee_id,
             'first_name': employee.first_name,
             'last_initial': employee.last_initial,
-            'position_title': employee.position_obj.title if employee.position_obj else None, # Access title via position_obj relationship
-            'position_id': employee.position_id, # Include position_id too if needed by frontend
+            'position_title': employee.position_obj.title if employee.position_obj else None,
+            'position_id': employee.position_id,
             'primary_work_area_id': employee.primary_work_area_id,
             'primary_work_area_name': employee.primary_work_area.work_area_name if employee.primary_work_area else None,
             'daily_entries': []
@@ -835,29 +911,19 @@ def get_daily_hours_for_week():
 
         current_date = calendar_week_start_date
         while current_date <= calendar_week_end_date:
-            daily_hour_entry = DailyEmployeeHours.query.filter_by(
-                employee_id=employee.employee_id,
-                work_date=current_date
-            ).first()
+            daily_hour_entry = entries_map.get((employee.employee_id, current_date))
 
-            # --- CRITICAL FIX: Reference default_hours from the Positions table via relationship ---
-            default_forecasted_hours_for_day = 0.0 # Default to 0 for weekends or if position_obj is missing
-            if current_date.weekday() >= 0 and current_date.weekday() <= 4: # Monday (0) to Friday (4)
-                if employee.position_obj: # Ensure position_obj exists
+            default_forecasted_hours_for_day = 0.0
+            if current_date.weekday() <= 4:
+                if employee.position_obj:
                     default_forecasted_hours_for_day = float(employee.position_obj.default_hours)
-                # If position_obj is None, default_forecasted_hours_for_day remains 0.0
-            # --- END CRITICAL FIX ---
 
-            is_employee_active_on_this_specific_day = True
-            emp_start_for_day_check = employee.employment_start_date
-            emp_end_for_day_check = employee.employment_end_date
+            is_employee_active = not (
+                (employee.employment_start_date and current_date < employee.employment_start_date) or
+                (employee.employment_end_date and current_date > employee.employment_end_date)
+            )
 
-            if emp_start_for_day_check and current_date < emp_start_for_day_check:
-                is_employee_active_on_this_specific_day = False
-            if emp_end_for_day_check and current_date > emp_end_for_day_check:
-                is_employee_active_on_this_specific_day = False
-
-            if not is_employee_active_on_this_specific_day:
+            if not is_employee_active:
                 default_forecasted_hours_for_day = 0.0
 
             entry_data = {
@@ -867,7 +933,7 @@ def get_daily_hours_for_week():
                 'forecasted_hours': str(daily_hour_entry.forecasted_hours) if daily_hour_entry else str(default_forecasted_hours_for_day),
                 'actual_hours': str(daily_hour_entry.actual_hours) if daily_hour_entry and daily_hour_entry.actual_hours is not None else None,
                 'work_area_id': daily_hour_entry.work_area_id if daily_hour_entry else employee.primary_work_area_id,
-                'overall_production_week_id': daily_hour_entry.overall_production_week_id if daily_hour_entry else current_overall_production_week_id,
+                'overall_production_week_id': current_overall_production_week_id,
                 'status': 'existing' if daily_hour_entry else 'new_potential'
             }
             employee_data['daily_entries'].append(entry_data)
@@ -878,7 +944,7 @@ def get_daily_hours_for_week():
         'employees_data': response_data,
         'all_work_areas': all_work_areas_for_response,
         'current_overall_production_week_id': current_overall_production_week_id,
-        'message_if_no_week': 'No Overall Production Schedule found for this period. Please create it first in "Manage Production Schedules".' if current_overall_production_week_id is None else None
+        'message_if_no_week': None
     })
 
 
@@ -951,6 +1017,36 @@ def batch_update_daily_hours():
                 overall_week.actual_dollars_per_hour = calculate_dollars_per_hour(actual_prod_val, actual_total_hrs)
 
         db.session.commit()
+
+        # --- BEGIN NOTIFICATION LOGIC ---
+        # This implementation notifies all other users. A future enhancement could be
+        # to implement user roles and notify only specific managers.
+        if affected_week_ids:
+            # Get all users who should be notified (everyone except the person making the change)
+            recipients = User.query.filter(User.id != current_user.id).all()
+            print(f"--- DEBUG: Found {len(recipients)} recipients ---") # <-- ADD THIS
+            
+            for week_id in affected_week_ids:
+                week = OverallProductionWeek.query.get(week_id)
+                if week and recipients:
+                    message = f'{current_user.username} updated hours for the week of {week.reporting_week_start_date.strftime("%b %d, %Y")}.'
+                    print(f"--- DEBUG: Generated message: {message} ---") # <-- ADD THIS
+                    
+                    # Create a link that will take the user directly to the correct week
+                    link = url_for('daily_hours_entry_page', _external=True) + f'?reporting_week_start_date={week.reporting_week_start_date.isoformat()}'
+
+                    for recipient in recipients:
+                        notification = Notification(
+                            user_id=recipient.id,
+                            message=message,
+                            link=link
+                        )
+                        db.session.add(notification)
+            
+            print("--- DEBUG: Committing notifications to database ---") # <-- ADD THIS
+            db.session.commit()
+        # --- END NOTIFICATION LOGIC ---
+
         return jsonify({'message': 'Daily hours updated successfully'}), 200
 
     except ValueError as ve:

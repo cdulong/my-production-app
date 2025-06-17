@@ -1381,6 +1381,90 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     box-shadow: none;
 }
 
+/* --- Notification Dropdown --- */
+.notification-area {
+    position: relative;
+    margin-left: 20px;
+}
+
+.notification-bell {
+    background: none;
+    border: none;
+    color: #333; /* You can adjust this color to match your theme */
+    font-size: 20px;
+    cursor: pointer;
+    position: relative;
+    padding: 5px;
+}
+
+.notification-count {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #e74c3c;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-dropdown {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    width: 320px; /* Increased width for better readability */
+    z-index: 1000;
+}
+
+.notification-dropdown.show {
+    display: block; /* This class is added by JavaScript to show the dropdown */
+}
+
+.notification-header {
+    font-weight: bold;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+#notifications-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#notifications-menu li a {
+    display: block;
+    padding: 12px 15px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    white-space: normal;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background-color 0.2s ease;
+}
+
+#notifications-menu li a:hover {
+    background-color: #f8f9fa;
+}
+
+#notifications-menu .dropdown-item-text {
+    padding: 15px;
+    color: #888;
+    font-size: 14px;
+}
+
 @media print {
     /* -- General Print Rules (for ALL pages) -- */
 

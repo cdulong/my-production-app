@@ -1,14 +1,22 @@
 {% extends "base.html" %}
 
+{% from "macros.html" import render_notification_bell %}
+
 {% block title %}Daily Labour Hours Entry{% endblock %}
 
 {% block page_title %}Daily Labour Hours Entry{% endblock %}
 
 {% block header_actions %}
-    <button id="saveAllHoursBtn" class="btn btn-primary-action">
-        <i class="fas fa-save"></i>
-        <span>Save All Hours</span>
-    </button>
+    <div class="action-buttons" style="display: flex; align-items: center; gap: 20px;">
+        
+        <button id="saveAllHoursBtn" class="btn btn-primary-action">
+            <i class="fas fa-save"></i>
+            <span>Save All Hours</span>
+        </button>
+
+        {{ render_notification_bell() }}
+
+    </div>
 {% endblock %}
 
 {% block content %}

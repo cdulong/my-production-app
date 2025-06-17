@@ -48,4 +48,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const bell = document.getElementById('notification-bell');
+    const dropdown = document.getElementById('notification-dropdown');
+
+    if (bell && dropdown) {
+        bell.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevents the document click listener from firing immediately
+            dropdown.classList.toggle('show');
+        });
+
+        // Close the dropdown if the user clicks anywhere else on the page
+        document.addEventListener('click', function(event) {
+            if (!dropdown.contains(event.target) && !bell.contains(event.target)) {
+                if (dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        });
+    }
+
 });
