@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Holidays{% endblock %}
+
+{% block page_title %}Manage Holidays{% endblock %}
+
+{% block content %}
+<div class="main-content-area">
+    <div class="card">
+        <div class="card-header">
+            <h3>Add New Holiday</h3>
+        </div>
+        <div class="card-body">
+            <form id="addHolidayForm" class="form-inline-group">
+                <div class="form-group">
+                    <label for="holidayDescription">Description:</label>
+                    <input type="text" id="holidayDescription" required>
+                </div>
+                <div class="form-group">
+                    <label for="holidayDate">Date:</label>
+                    <input type="date" id="holidayDate" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Holiday</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Existing Holidays</h3>
+        </div>
+        <div class="card-body">
+            <ul id="holidayList" class="simple-list">
+                <!-- Holidays will be loaded here by JavaScript -->
+                <li>Loading holidays...</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_body_scripts %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/holidays.js') }}"></script>
+{% endblock %}

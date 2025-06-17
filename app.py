@@ -279,6 +279,21 @@ class Notification(db.Model):
     def __repr__(self):
         return f'<Notification {self.message}>'
 
+class Holiday(db.Model):
+    __tablename__ = 'holidays'
+    id = db.Column(db.Integer, primary_key=True)
+    holiday_date = db.Column(db.Date, unique=True, nullable=False)
+    description = db.Column(db.String(100), nullable=False)
+
+    def __repr__(self):
+        return f"<Holiday {self.description} on {self.holiday_date}>"
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'holiday_date': self.holiday_date.isoformat(),
+            'description': self.description
+        }
 
 @app.cli.command("create-user")
 def create_user():
@@ -333,12 +348,14 @@ def index():
     total_employees = Employee.query.filter(Employee.employment_end_date == None).count()
     total_work_areas = WorkArea.query.count()
     total_positions = Position.query.count()
+    upcoming_holidays = Holiday.query.filter(Holiday.holiday_date >= today).count()
 
     return render_template('index.html',
                            total_employees=total_employees,
                            total_work_areas=total_work_areas,
                            total_positions=total_positions,
-                           this_months_hours=this_months_hours)
+                           this_months_hours=this_months_hours,
+                           upcoming_holidays=upcoming_holidays)
 
 @app.route('/work_areas')
 @login_required
@@ -386,7 +403,6 @@ def get_notifications():
         'timestamp': n.timestamp.strftime('%Y-%m-%d %H:%M:%S')
     } for n in notifications])
 
-
 @app.before_request
 def mark_notification_as_read():
     if not current_user.is_authenticated:
@@ -403,6 +419,44 @@ def mark_notification_as_read():
             print("--- MARK AS READ DEBUG: Notification marked as read and committed.")
         else:
             print("--- MARK AS READ DEBUG: FAILED to find a matching notification for this user.")
+
+@app.route('/holidays')
+@login_required
+def holidays_page():
+    return render_template('holidays.html')
+
+@app.route('/api/holidays', methods=['GET'])
+@api_login_required
+def get_holidays():
+    holidays = Holiday.query.order_by(Holiday.holiday_date.asc()).all()
+    return jsonify([h.to_dict() for h in holidays])
+
+@app.route('/api/holidays', methods=['POST'])
+@api_login_required
+def add_holiday():
+    data = request.get_json()
+    if not data or not data.get('description') or not data.get('holiday_date'):
+        return jsonify({'message': 'Missing description or date'}), 400
+    try:
+        holiday_date = date.fromisoformat(data['holiday_date'])
+        if Holiday.query.filter_by(holiday_date=holiday_date).first():
+            return jsonify({'message': 'A holiday for this date already exists'}), 409
+
+        new_holiday = Holiday(description=data['description'], holiday_date=holiday_date)
+        db.session.add(new_holiday)
+        db.session.commit()
+        return jsonify(new_holiday.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': str(e)}), 500
+
+@app.route('/api/holidays/<int:id>', methods=['DELETE'])
+@api_login_required
+def delete_holiday(id):
+    holiday = Holiday.query.get_or_404(id)
+    db.session.delete(holiday)
+    db.session.commit()
+    return jsonify({'message': 'Holiday deleted successfully'}), 200
 
 # --- API Endpoints ---
 
@@ -715,28 +769,41 @@ def get_overall_production_weeks():
 @app.route('/api/overall-production-weeks', methods=['POST'])
 @api_login_required
 def create_overall_production_week():
+    """
+    Creates a new overall production week and generates the corresponding daily
+    forecasted hours for all active employees, factoring in company holidays.
+    """
     data = request.get_json()
-    if not data or not 'reporting_week_start_date' in data:
+    if not data or 'reporting_week_start_date' not in data:
         return jsonify({'message': 'Missing reporting_week_start_date parameter'}), 400
 
     try:
         reporting_start_date = date.fromisoformat(data['reporting_week_start_date'])
-        reporting_end_date = reporting_start_date + timedelta(days=6)
+        
+        # Ensure the start date is a Monday
+        if reporting_start_date.weekday() != 0:
+            return jsonify({'message': 'Reporting week start date must be a Monday.'}), 400
 
-        existing_week = OverallProductionWeek.query.filter_by(reporting_week_start_date=reporting_start_date).first()
-        if existing_week:
+        # Check if a week with this start date already exists
+        if OverallProductionWeek.query.filter_by(reporting_week_start_date=reporting_start_date).first():
             return jsonify({'message': f'A production schedule starting on {reporting_start_date.isoformat()} already exists.'}), 409
 
+        # Create the new production week record
         new_week = OverallProductionWeek(
             reporting_week_start_date=reporting_start_date,
-            reporting_week_end_date=reporting_end_date,
+            reporting_week_end_date=reporting_start_date + timedelta(days=6),
             forecasted_product_value=None,
             actual_product_value=None,
             forecasted_dollars_per_hour=None,
             actual_dollars_per_hour=None
         )
         db.session.add(new_week)
-        db.session.commit()
+        db.session.commit() # Commit here to get the new_week.overall_production_week_id
+
+        # --- HOLIDAY INTEGRATION ---
+        # 1. Get all holiday dates from the database once for efficient lookup.
+        holiday_dates = {h.holiday_date for h in Holiday.query.all()}
+        # --- END HOLIDAY INTEGRATION ---
 
         all_employees = Employee.query.all()
         forecasted_total_hours_for_week = 0
@@ -747,50 +814,45 @@ def create_overall_production_week():
                 print(f"Warning: Employee {employee.employee_id} has no primary work area. Skipping daily hours generation for this employee.")
                 continue
 
-            # --- Employee Employment Dates ---
-            emp_start = employee.employment_start_date
-            emp_end = employee.employment_end_date # This is the key variable for this bug
-
+            # Determine the date range for which this employee's hours contribute to the schedule
             offset_days = employee_work_area.reporting_week_start_offset_days
             contributing_start_date = reporting_start_date + timedelta(days=offset_days)
             contributing_end_date = contributing_start_date + timedelta(days=employee_work_area.contributing_duration_days - 1)
 
             current_date = contributing_start_date
             while current_date <= contributing_end_date:
-                # --- CRITICAL FILTERING LOGIC ---
-                is_employee_active_on_day = True
-                if emp_start and current_date < emp_start: # If current_date is before employee's start date
-                    is_employee_active_on_day = False
-                if emp_end and current_date > emp_end: # If current_date is after employee's end date (emp_end is not None)
-                    is_employee_active_on_day = False
-                # --- END CRITICAL FILTERING LOGIC ---
                 
-                if is_employee_active_on_day:
-                    if current_date.weekday() >= 0 and current_date.weekday() <= 4: # Monday (0) to Friday (4)
-                        if employee.position_obj and employee.position_obj.title == "Supervisor":
-                            forecasted_hours_for_day = 8.0
-                        elif employee.position_obj and employee.position_obj.title == "Team Leader":
-                            forecasted_hours_for_day = 7.75
-                        elif employee.position_obj and employee.position_obj.title == "Regular Staff":
-                            forecasted_hours_for_day = 7.5
-                        else:
-                            forecasted_hours_for_day = 0.0
-                    else: # Saturday (5) or Sunday (6)
-                        forecasted_hours_for_day = 0.0 # Forecast 0 hours for weekend
+                # Check if the employee is actively employed on the current date
+                is_employee_active_on_day = not (
+                    (employee.employment_start_date and current_date < employee.employment_start_date) or
+                    (employee.employment_end_date and current_date > employee.employment_end_date)
+                )
 
-                    daily_entry = DailyEmployeeHours(
-                        employee_id=employee.employee_id,
-                        work_area_id=employee_work_area.work_area_id,
-                        work_date=current_date,
-                        forecasted_hours=forecasted_hours_for_day,
-                        actual_hours=None,
-                        overall_production_week_id=new_week.overall_production_week_id
-                    )
-                    db.session.add(daily_entry)
-                    forecasted_total_hours_for_week += float(forecasted_hours_for_day)
+                forecasted_hours_for_day = 0.0 # Default to 0
+
+                # --- HOLIDAY INTEGRATION ---
+                # 2. Assign hours only if it's a weekday, not a holiday, and the employee is active.
+                if is_employee_active_on_day and current_date not in holiday_dates and current_date.weekday() < 5:
+                    # If conditions are met, get the default hours from the employee's position
+                    if employee.position_obj:
+                        forecasted_hours_for_day = float(employee.position_obj.default_hours)
+                # --- END HOLIDAY INTEGRATION ---
+
+                # Create the daily hours record
+                daily_entry = DailyEmployeeHours(
+                    employee_id=employee.employee_id,
+                    work_area_id=employee_work_area.work_area_id,
+                    work_date=current_date,
+                    forecasted_hours=forecasted_hours_for_day,
+                    actual_hours=None,
+                    overall_production_week_id=new_week.overall_production_week_id
+                )
+                db.session.add(daily_entry)
+                forecasted_total_hours_for_week += forecasted_hours_for_day
 
                 current_date += timedelta(days=1)
 
+        # Update the total forecasted hours on the parent week record
         new_week.forecasted_total_production_hours = round(float(forecasted_total_hours_for_week), 2)
         db.session.commit()
 

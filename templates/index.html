@@ -29,6 +29,12 @@
                     <span>Manage<br>Work Areas</span>
                     <span class="button-data">{{ total_work_areas }}</span>
                 </a>
+                <a href="{{ url_for('holidays_page') }}" class="dashboard-button">
+                    <i class="fas fa-mug-hot icon"></i>
+                    <span>Upcoming<br>Holidays</span>
+                    <span class="button-data">{{ upcoming_holidays }}</span>
+                </a>
+
             </div>
         </section>
 
