@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const li = document.createElement('li');
                 li.innerHTML = `
                     <span><strong>${holiday.description}</strong> - ${holiday.holiday_date}</span>
-                    <button class="btn btn-danger btn-sm delete-btn" data-id="${holiday.id}">Delete</button>
+                    <button class="btn-sm delete-btn" data-id="${holiday.id}">Delete</button>
                 `;
                     holidayList.appendChild(li);
                 });

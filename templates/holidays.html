@@ -5,38 +5,22 @@
 {% block page_title %}Manage Holidays{% endblock %}
 
 {% block content %}
-<div class="main-content-area">
-    <div class="card">
-        <div class="card-header">
-            <h3>Add New Holiday</h3>
-        </div>
-        <div class="card-body">
-            <form id="addHolidayForm" class="form-inline-group">
-                <div class="form-group">
-                    <label for="holidayDescription">Description:</label>
-                    <input type="text" id="holidayDescription" required>
-                </div>
-                <div class="form-group">
-                    <label for="holidayDate">Date:</label>
-                    <input type="date" id="holidayDate" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Add Holiday</button>
-            </form>
-        </div>
-    </div>
+
+    <form id="addHolidayForm">
+        <label for="holidayDescription">Description:</label>
+        <input type="text" id="holidayDescription" requried>
+        <label for="holidayDate">Date:</label>
+        <input type="date" id="holidayDate" required>
+        <button type="submit" class="btn">Add Holiday</button>
+    </form>
 
     <div class="card">
         <div class="card-header">
-            <h3>Existing Holidays</h3>
-        </div>
-        <div class="card-body">
+            <h2>Existing Holidays</h2>
             <ul id="holidayList" class="simple-list">
                 <!-- Holidays will be loaded here by JavaScript -->
                 <li>Loading holidays...</li>
             </ul>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_body_scripts %}

@@ -1352,11 +1352,28 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
 
 #positionForm,
 #workAreaForm,
-#productionWeekForm {
+#productionWeekForm,
+#addHolidayForm {
     max-width: 500px;
 }
 
 /* --- Report Action Buttons --- */
+
+.btn-sm {
+    padding: 5px 10px;
+    border-radius: 4px;
+    color: white;
+    background-color: #578a7f;
+    cursor: pointer;
+    font-size: 0.8em;
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+.btn-sm:hover {
+    background-color: #004d40;
+}
+
 .btn {
     padding: 10px 15px;
     border-radius: 4px;
@@ -1463,6 +1480,30 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     padding: 15px;
     color: #888;
     font-size: 14px;
+}
+
+#holidayList {
+    max-width: 520px;
+}
+
+/* Target the list on the holidays page */
+.simple-list {
+    list-style: none;
+    padding: 0;
+}
+
+/* Make each list item a flex container */
+.simple-list li {
+    display: flex;
+    justify-content: space-between; /* This is the key change */
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee; /* Adds a nice separator */
+}
+
+/* Adjust the delete button's margin */
+.simple-list li .delete-btn {
+    margin-left: 20px; /* Adds space between the text and the button */
 }
 
 @media print {
