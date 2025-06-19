@@ -80,6 +80,7 @@
 
     {% block extra_body_scripts %}
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
         <script>
             var current_user_id = {{ current_user.id if current_user.is_authenticated else 'null' }};
         </script>

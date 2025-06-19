@@ -336,6 +336,7 @@ class FinishingWork(db.Model):
     manual_part_name = db.Column(db.String(100), nullable=True)
     finish_type = db.Column(db.String(50), nullable=False)
     stage = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.String(50), nullable=True)
     stage_completed_date = db.Column(db.Date, nullable=True)
     employee_id = db.Column(db.Integer, db.ForeignKey('employees.employee_id'), nullable=True)
     batch_number = db.Column(db.String(50))
@@ -350,6 +351,7 @@ class FinishingWork(db.Model):
             'manual_part_name': self.manual_part_name,
             'finish_type': self.finish_type,
             'stage': self.stage,
+            'status': self.status,
             'stage_completed_date': self.stage_completed_date.isoformat() if self.stage_completed_date else None,
             'employee_id': self.employee_id,
             'employee_name': self.employee.name if self.employee else None,
@@ -1708,6 +1710,7 @@ def update_finishing_work(finishing_id):
     work_item = FinishingWork.query.get_or_404(finishing_id)
     data = request.get_json()
     work_item.stage = data.get('stage', work_item.stage)
+    work_item.status = data.get('status', work_item.status)
     work_item.stage_completed_date = data.get('stage_completed_date', work_item.stage_completed_date)
     work_item.employee_id = data.get('employee_id', work_item.employee_id)
     db.session.commit()
