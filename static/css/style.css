@@ -84,13 +84,13 @@ a:hover {
 }
 
 .sidebar-menu li {
-    margin-bottom: 5px;
+    margin-bottom: 0px;
 }
 
 .sidebar-menu-item {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
+    padding: 10px 20px;
     color: rgba(255,255,255,0.8); /* Lighter white for menu items */
     text-decoration: none;
     transition: background-color 0.2s ease, color 0.2s ease;
@@ -1497,13 +1497,87 @@ table td button.go-to-daily-entry-btn { background-color: #ffc107 !important; co
     display: flex;
     justify-content: space-between; /* This is the key change */
     align-items: center;
-    padding: 8px 0;
+    padding: 2px 0;
     border-bottom: 1px solid #eee; /* Adds a nice separator */
 }
 
-/* Adjust the delete button's margin */
-.simple-list li .delete-btn {
-    margin-left: 20px; /* Adds space between the text and the button */
+/* --- Job Master List Form (Final Solution) --- */
+
+/* 1. Reset the form itself to a simple block container */
+#jobForm {
+    display: block !important;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+    margin: 0;
+    width: 725px;
+}
+
+/* 2. Style the container that holds the two columns */
+#jobForm .job-form-container {
+    display: flex;
+    flex-wrap: wrap; /* Allows columns to wrap on small screens */
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+/* 3. Style the columns themselves */
+#jobForm .job-form-column-left,
+#jobForm .job-form-column-right {
+    display: block; /* CRITICAL: This overrides the global 'form div { display: flex; }' rule, allowing rows to stack */
+    padding: 0; /* Reset any unwanted padding */
+    margin: 0; /* Reset any unwanted margin */
+}
+
+/* Define the size of the columns as flex items */
+#jobForm .job-form-column-left {
+    flex: 2; /* Takes up more space */
+    min-width: 420px;
+}
+
+#jobForm .job-form-column-right {
+    flex: 1; /* Takes up less space */
+    min-width: 220px;
+}
+
+/* 4. Style each row (label + input) inside the columns */
+#jobForm .job-form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* 5. Style the labels within the rows */
+#jobForm .job-form-row label {
+    font-weight: bold;
+    margin-bottom: 0;
+    padding-right: 1em;
+    /* flex-shrink: 0; Prevents labels from shrinking */
+}
+
+#jobForm .job-form-column-left .job-form-row label {
+    width: 250px;
+    text-align: left;
+}
+
+#jobForm .job-form-column-right .job-form-row label {
+    width: 60px;
+    text-align: left;
+}
+
+/* 6. Style the input fields within the rows */
+#jobForm .job-form-row .form-control {
+    /* CRITICAL: Using width: 100% tells the input to fill the remaining space
+       in the flex row without overflowing and causing scrolling. */
+    width: 100%;
+    flex-grow: 0; /* Override generic 'form input { flex-grow: 1; }' */
+}
+
+/* 7. Style the action buttons area */
+#jobForm .job-form-actions {
+    display: flex;
+    gap: 10px;
+    /* padding-left: calc(250px + 1em); Aligns buttons with the inputs in the left column */
 }
 
 @media print {

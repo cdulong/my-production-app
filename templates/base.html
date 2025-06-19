@@ -38,6 +38,10 @@
             <li class="menu-category">Reports</li>
             <li><a href="{{ url_for('reports_page') }}" class="sidebar-menu-item"><i class="fas fa-chart-line"></i> <span>Weekly Overview</span></a></li>
             <li><a href="{{ url_for('monthly_work_area_hours_report_page') }}" class="sidebar-menu-item"><i class="fas fa-chart-bar"></i> <span>Monthly Hours</span></a></li>
+            <li class="menu-category">Production Tracking</li>
+            <li><a href="{{ url_for('jobs_page') }}" class="sidebar-menu-item"><i class="fas fa-list-alt"></i><span>Job Master List</span></a></li>
+            <li><a href="{{ url_for('daily_summary_page') }}" class="sidebar-menu-item"><i class="fas fa-clipboard-list"></i><span>Daily Shift Summary</span></a></li>
+            <li><a href="{{ url_for('finishing_wip_page') }}" class="sidebar-menu-item"><i class="fas fa-paint-roller"></i><span>Finishing WIP</span></a></li>
         </ul>
         <div class="sidebar-footer">
             <a href="{{ url_for('logout') }}" class="sidebar-menu-item">

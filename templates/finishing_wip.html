@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Finishing WIP{% endblock %}
+
+{% block page_title %}Finishing Work-In-Progress{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Finishing Status Overview</h3>
+    </div>
+    <div class="card-body">
+        <p>This page shows the real-time status of all jobs and parts currently in the finishing process. Click on a cell to update its status.</p>
+        <div id="finishing-wip-container">
+            <!-- All tables will be generated here by JavaScript -->
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal fade" id="statusUpdateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">Update Status</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Select the new status for <strong id="modal-job-tag"></strong> - <strong id="modal-stage-name"></strong>.</p>
+        <input type="hidden" id="modal-work-id">
+        <input type="hidden" id="modal-job-id">
+        <input type="hidden" id="modal-finish-type">
+        <div class="form-group">
+            <label for="modal-status">Status</label>
+            <select id="modal-status" class="form-control">
+                <option value="In Progress">In Progress</option>
+                <option value="Complete">Complete</option>
+                <option value="Clear">Clear Status</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="modal-employee">Completed By</label>
+            <select id="modal-employee" class="form-control"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="saveStatusBtn">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_body_scripts %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/finishing_wip.js') }}"></script>
+{% endblock %}

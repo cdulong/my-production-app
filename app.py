@@ -38,63 +38,38 @@ login_manager.login_view = 'login' # The route to redirect to if a user isn't lo
 login_manager.login_message_category = 'info' # For flash messages
 
 # --- SMTP Configuration from Environment Variables ---
-SMTP_SERVER = os.environ.get('SMTP_SERVER') # e.g., 'smtp.gmail.com' for Gmail
-SMTP_PORT = int(os.environ.get('SMTP_PORT')) # e.g., 587 for TLS, 465 for SSL
-SMTP_USERNAME = os.environ.get('SMTP_USERNAME') # Your sending email address
-SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD') # Your email password or app-specific password
-SENDER_EMAIL = os.environ.get('SENDER_EMAIL') # The email address that appears as the sender
-SENDER_NAME = os.environ.get('SENDER_NAME') # The name that appears as the sender
+SMTP_SERVER = os.environ.get('SMTP_SERVER')
+SMTP_PORT = int(os.environ.get('SMTP_PORT'))
+SMTP_USERNAME = os.environ.get('SMTP_USERNAME')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL')
+SENDER_NAME = os.environ.get('SENDER_NAME')
 # --- END NEW ---
 
 
 # --- Helper Functions ---
-# Helper to get the Sunday (00:00:00) of the week for any given date object
 def get_sunday_of_week(any_date):
-    """Returns the Sunday of the week for the given date."""
-    # weekday() returns 0 for Monday, 6 for Sunday.
-    # To normalize: days_to_subtract = (any_date.weekday() + 1) % 7
     days_to_subtract = (any_date.weekday() + 1) % 7
     return any_date - timedelta(days=days_to_subtract)
 
-# Helper to get the Monday (00:00:00) of the week for any given date object
-# This version explicitly handles Sunday first to avoid the backward snap observed.
 def get_monday_of_week(d):
-    """
-    Returns the Monday (00:00:00) of the calendar week for any given date object.
-    If the input date is a Sunday, it returns the Monday of the *same* calendar week.
-    """
-    # Create a new Date object directly from its year, month, and day components
-    # to ensure it's interpreted consistently in the local timezone's midnight.
-    date_obj = date(d.year, d.month, d.day) # Use date object for simplicity, no time component needed
-
-    day = date_obj.weekday() # Get the day of the week (0 for Monday, ..., 6 for Sunday)
-
-    # If the date is Sunday (Python's weekday 6), we want to advance it to Monday (day 0) first.
-    # This ensures it's treated as part of the *upcoming* Monday-starting week.
+    date_obj = date(d.year, d.month, d.day)
+    day = date_obj.weekday()
     if day == 6: # Sunday
         date_obj += timedelta(days=1)
-        day = date_obj.weekday() # Recalculate day, which will now be 0 (Monday)
-
-    # Now, 'date_obj' is guaranteed to be a Monday through Saturday (Python's weekday 0-5).
-    # Calculate days to subtract to go back to the Monday of *this* week (0-based index)
-    # Example: if it's Tuesday (weekday 1), days_to_subtract = 1.
-    # Example: if Monday (weekday 0), days_to_subtract = 0.
+        day = date_obj.weekday()
     days_to_subtract = day
-
     monday_of_week = date_obj - timedelta(days=days_to_subtract)
-    
     return monday_of_week
 
-# Helper function to calculate Dollars Per Hour
 def calculate_dollars_per_hour(value, hours):
     if hours is None or float(hours) == 0:
-        return None # Avoid division by zero, return None if hours are zero or not set
+        return None
     if value is None:
-        return None # If value is not set, DPH cannot be calculated
-    
+        return None
     try:
         return round(float(value) / float(hours), 2)
-    except (ValueError, TypeError): # Handle cases where conversion to float fails
+    except (ValueError, TypeError):
         return None
 
 
@@ -116,7 +91,7 @@ class WorkArea(db.Model):
     work_area_name = db.Column(db.String(100), unique=True, nullable=False)
     reporting_week_start_offset_days = db.Column(db.Integer, nullable=False)
     contributing_duration_days = db.Column(db.Integer, default=7, nullable=False)
-    display_order = db.Column(db.Integer, nullable=True) # Used for custom sorting
+    display_order = db.Column(db.Integer, nullable=True)
 
     employees = db.relationship('Employee', backref='primary_work_area', lazy=True)
     daily_hours_entries = db.relationship('DailyEmployeeHours', backref='work_area', lazy=True)
@@ -138,13 +113,9 @@ class Employee(db.Model):
     employee_id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(50), nullable=False)
     last_initial = db.Column(db.String(5), nullable=False)
-    # --- REMOVED: position (string) ---
-    # position = db.Column(db.String(50), nullable=False) 
-    # --- ADDED: position_id (ForeignKey) ---
     position_id = db.Column(db.Integer, db.ForeignKey('positions.position_id'), nullable=False)
-    # --- END MODIFIED ---
     primary_work_area_id = db.Column(db.Integer, db.ForeignKey('work_areas.work_area_id'), nullable=False)
-    display_order = db.Column(db.Integer, nullable=False, server_default='999999') # Used for custom sorting
+    display_order = db.Column(db.Integer, nullable=False, server_default='999999')
 
     employment_start_date = db.Column(db.Date, nullable=False)
     employment_end_date = db.Column(db.Date, nullable=True)
@@ -155,25 +126,15 @@ class Employee(db.Model):
         return f"<Employee {self.first_name} {self.last_initial}>"
 
     def to_dict(self):
-        # Determine default_forecasted_daily_hours based on position
-        # forecasted_hours = 0
-        # if self.position == "Regular Staff":
-        #    forecasted_hours = 7.5
-        # elif self.position == "Team Leader":
-        #    forecasted_hours = 7.75
-        # elif self.position == "Supervisor": # --- NEW: Supervisor hours ---
-        #    forecasted_hours = 8.0
-        # --- END NEW ---
-
         return {
             'employee_id': self.employee_id,
             'first_name': self.first_name,
             'last_initial': self.last_initial,
-            'position_id': self.position_id, # Include ID for frontend
-            'position_title': self.position_obj.title if self.position_obj else None, # Get title from relationship
+            'position_id': self.position_id,
+            'position_title': self.position_obj.title if self.position_obj else None,
             'primary_work_area_id': self.primary_work_area_id,
             'primary_work_area_name': self.primary_work_area.work_area_name if self.primary_work_area else None,
-            'default_forecasted_daily_hours': str(self.position_obj.default_hours) if self.position_obj else None, # Get hours from relationship
+            'default_forecasted_daily_hours': str(self.position_obj.default_hours) if self.position_obj else None,
             'display_order': self.display_order,
             'employment_start_date': self.employment_start_date.isoformat(),
             'employment_end_date': self.employment_end_date.isoformat() if self.employment_end_date else None
@@ -184,18 +145,14 @@ class OverallProductionWeek(db.Model):
     overall_production_week_id = db.Column(db.Integer, primary_key=True)
     reporting_week_start_date = db.Column(db.Date, nullable=False, unique=True)
     reporting_week_end_date = db.Column(db.Date, nullable=False)
-
     forecasted_product_value = db.Column(db.Numeric(12, 2), nullable=True)
     actual_product_value = db.Column(db.Numeric(12, 2), nullable=True)
-
     forecasted_dollars_per_hour = db.Column(db.Numeric(10, 2), nullable=True)
     actual_dollars_per_hour = db.Column(db.Numeric(10, 2), nullable=True)
-
     forecasted_boxes_built = db.Column(db.Integer, nullable=True)
     actual_boxes_built = db.Column(db.Integer, nullable=True)
     forecasted_total_production_hours = db.Column(db.Numeric(10, 2), nullable=True)
     actual_total_production_hours = db.Column(db.Numeric(10, 2), nullable=True)
-
     daily_hours = db.relationship('DailyEmployeeHours', backref='production_week', lazy=True, cascade="all, delete-orphan")
 
     def __repr__(self):
@@ -206,13 +163,10 @@ class OverallProductionWeek(db.Model):
             'overall_production_week_id': self.overall_production_week_id,
             'reporting_week_start_date': self.reporting_week_start_date.isoformat(),
             'reporting_week_end_date': self.reporting_week_end_date.isoformat(),
-            
             'forecasted_product_value': str(self.forecasted_product_value) if self.forecasted_product_value is not None else None,
             'actual_product_value': str(self.actual_product_value) if self.actual_product_value is not None else None,
-
             'forecasted_dollars_per_hour': str(self.forecasted_dollars_per_hour) if self.forecasted_dollars_per_hour is not None else None,
             'actual_dollars_per_hour': str(self.actual_dollars_per_hour) if self.actual_dollars_per_hour is not None else None,
-            
             'forecasted_boxes_built': self.forecasted_boxes_built,
             'actual_boxes_built': self.actual_boxes_built,
             'forecasted_total_production_hours': str(self.forecasted_total_production_hours) if self.forecasted_total_production_hours is not None else None,
@@ -249,10 +203,8 @@ class Position(db.Model):
     __tablename__ = 'positions'
     position_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(50), unique=True, nullable=False)
-    default_hours = db.Column(db.Numeric(4, 2), nullable=False) # Store default hours here
-    display_order = db.Column(db.Integer, nullable=False, server_default='999999') # Default to a large number
-
-    # Relationship to employees (one Position can have many Employees)
+    default_hours = db.Column(db.Numeric(4, 2), nullable=False)
+    display_order = db.Column(db.Integer, nullable=False, server_default='999999')
     employees = db.relationship('Employee', backref='position_obj', lazy=True)
 
     def __repr__(self):
@@ -263,7 +215,7 @@ class Position(db.Model):
             'position_id': self.position_id,
             'title': self.title,
             'default_hours': str(self.default_hours),
-            'display_order': self.display_order # --- NEW: Include in to_dict ---
+            'display_order': self.display_order
         }
 
 class Notification(db.Model):
@@ -272,8 +224,7 @@ class Notification(db.Model):
     message = db.Column(db.String(255), nullable=False)
     is_read = db.Column(db.Boolean, default=False, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    link = db.Column(db.String(255), nullable=True)  # URL for the notification
-
+    link = db.Column(db.String(255), nullable=True)
     user = db.relationship('User', backref=db.backref('notifications', lazy=True))
 
     def __repr__(self):
@@ -294,6 +245,118 @@ class Holiday(db.Model):
             'holiday_date': self.holiday_date.isoformat(),
             'description': self.description
         }
+
+# --- NEW MODELS FOR SHIFT SUMMARIES ---
+class Job(db.Model):
+    __tablename__ = 'jobs'
+    job_id = db.Column(db.Integer, primary_key=True)
+    job_tag = db.Column(db.String(100), unique=True, nullable=False)
+    num_sheets = db.Column(db.Integer, nullable=True)
+    num_mdf_doors = db.Column(db.Integer, nullable=True)
+    linear_meters_edgebanding = db.Column(db.Float, nullable=True)
+    num_drawer_boxes = db.Column(db.Integer, nullable=True)
+    boxes_mcp = db.Column(db.Integer, nullable=True)
+    boxes_pvc = db.Column(db.Integer, nullable=True)
+    boxes_paint = db.Column(db.Integer, nullable=True)
+    boxes_stain = db.Column(db.Integer, nullable=True)
+    boxes_natural = db.Column(db.Integer, nullable=True)
+    boxes_glaze = db.Column(db.Integer, nullable=True)
+
+    def to_dict(self):
+        return {
+            'job_id': self.job_id,
+            'job_tag': self.job_tag,
+            'num_sheets': self.num_sheets,
+            'num_mdf_doors': self.num_mdf_doors,
+            'linear_meters_edgebanding': self.linear_meters_edgebanding,
+            'num_drawer_boxes': self.num_drawer_boxes,
+            'boxes_mcp': self.boxes_mcp,
+            'boxes_pvc': self.boxes_pvc,
+            'boxes_paint': self.boxes_paint,
+            'boxes_stain': self.boxes_stain,
+            'boxes_natural': self.boxes_natural,
+            'boxes_glaze': self.boxes_glaze
+        }
+
+class DailyShiftSummary(db.Model):
+    __tablename__ = 'daily_shift_summaries'
+    summary_id = db.Column(db.Integer, primary_key=True)
+    summary_date = db.Column(db.Date, nullable=False)
+    department = db.Column(db.String(100), nullable=False)
+    job_id = db.Column(db.Integer, db.ForeignKey('jobs.job_id'), nullable=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employees.employee_id'), nullable=False)
+    station = db.Column(db.String(100), nullable=True)
+    sheets_cut_mtr = db.Column(db.Integer, nullable=True)
+    sheets_cut_cs43 = db.Column(db.Integer, nullable=True)
+    mdf_doors_cut_mtr = db.Column(db.Integer, nullable=True)
+    mdf_doors_cut_cs43 = db.Column(db.Integer, nullable=True)
+    edgebanding_ran = db.Column(db.Float, nullable=True)
+    edgebanding_changeovers = db.Column(db.Integer, nullable=True)
+    manual_edgebanding = db.Column(db.Integer, nullable=True)
+    drawer_boxes_built = db.Column(db.Integer, nullable=True)
+    boxes_prepped = db.Column(db.Integer, nullable=True)
+    boxes_built = db.Column(db.Integer, nullable=True)
+    boxes_hung = db.Column(db.Integer, nullable=True)
+    team_leader = db.Column(db.String(100))
+    shift = db.Column(db.String(50))
+    notes = db.Column(db.Text)
+    job = db.relationship('Job', backref='daily_shift_summaries')
+    employee = db.relationship('Employee', backref='daily_shift_summaries')
+
+    def to_dict(self):
+        return {
+            'summary_id': self.summary_id,
+            'summary_date': self.summary_date.isoformat(),
+            'department': self.department,
+            'job_id': self.job_id,
+            'job_tag': self.job.job_tag if self.job else None,
+            'employee_id': self.employee_id,
+            'employee_name': self.employee.name if self.employee else None,
+            'station': self.station,
+            'sheets_cut_mtr': self.sheets_cut_mtr,
+            'sheets_cut_cs43': self.sheets_cut_cs43,
+            'mdf_doors_cut_mtr': self.mdf_doors_cut_mtr,
+            'mdf_doors_cut_cs43': self.mdf_doors_cut_cs43,
+            'edgebanding_ran': self.edgebanding_ran,
+            'edgebanding_changeovers': self.edgebanding_changeovers,
+            'manual_edgebanding': self.manual_edgebanding,
+            'drawer_boxes_built': self.drawer_boxes_built,
+            'boxes_prepped': self.boxes_prepped,
+            'boxes_built': self.boxes_built,
+            'boxes_hung': self.boxes_hung,
+            'team_leader': self.team_leader,
+            'shift': self.shift,
+            'notes': self.notes
+        }
+
+class FinishingWork(db.Model):
+    __tablename__ = 'finishing_work'
+    finishing_id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.Integer, db.ForeignKey('jobs.job_id'), nullable=True)
+    manual_part_name = db.Column(db.String(100), nullable=True)
+    finish_type = db.Column(db.String(50), nullable=False)
+    stage = db.Column(db.String(50), nullable=False)
+    stage_completed_date = db.Column(db.Date, nullable=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employees.employee_id'), nullable=True)
+    batch_number = db.Column(db.String(50))
+    job = db.relationship('Job', backref='finishing_work')
+    employee = db.relationship('Employee', backref='finishing_work')
+
+    def to_dict(self):
+        return {
+            'finishing_id': self.finishing_id,
+            'job_id': self.job_id,
+            'job_tag': self.job.job_tag if self.job else None,
+            'manual_part_name': self.manual_part_name,
+            'finish_type': self.finish_type,
+            'stage': self.stage,
+            'stage_completed_date': self.stage_completed_date.isoformat() if self.stage_completed_date else None,
+            'employee_id': self.employee_id,
+            'employee_name': self.employee.name if self.employee else None,
+            'batch_number': self.batch_number
+        }
+# --- END NEW MODELS ---
+
 
 @app.cli.command("create-user")
 def create_user():
@@ -319,7 +382,7 @@ def create_user():
     db.session.add(new_user)
     db.session.commit()
     print(f"User '{username}' created successfully.")
-          
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -425,6 +488,22 @@ def mark_notification_as_read():
 def holidays_page():
     return render_template('holidays.html')
 
+@app.route('/jobs')
+@login_required
+def jobs_page():
+    return render_template('jobs.html')
+
+@app.route('/daily-summary')
+@login_required
+def daily_summary_page():
+    return render_template('daily_summary.html')
+
+@app.route('/finishing-wip')
+@login_required
+def finishing_wip_page():
+    return render_template('finishing_wip.html')
+
+# --- API Endpoints ---
 @app.route('/api/holidays', methods=['GET'])
 @api_login_required
 def get_holidays():
@@ -441,7 +520,6 @@ def add_holiday():
         holiday_date = date.fromisoformat(data['holiday_date'])
         if Holiday.query.filter_by(holiday_date=holiday_date).first():
             return jsonify({'message': 'A holiday for this date already exists'}), 409
-
         new_holiday = Holiday(description=data['description'], holiday_date=holiday_date)
         db.session.add(new_holiday)
         db.session.commit()
@@ -464,7 +542,6 @@ def delete_holiday(id):
 @app.route('/api/work-areas', methods=['GET'])
 @api_login_required
 def get_work_areas():
-    # Order by display_order, then by work_area_id as a fallback
     work_areas = WorkArea.query.order_by(WorkArea.display_order, WorkArea.work_area_id).all()
     return jsonify([wa.to_dict() for wa in work_areas])
 
@@ -474,7 +551,6 @@ def create_work_area():
     data = request.get_json()
     if not data or not 'work_area_name' in data or not 'reporting_week_start_offset_days' in data:
         return jsonify({'message': 'Missing required data'}), 400
-
     new_work_area = WorkArea(
         work_area_name=data['work_area_name'],
         reporting_week_start_offset_days=data['reporting_week_start_offset_days'],
@@ -491,11 +567,9 @@ def update_work_area(id):
     data = request.get_json()
     if not data:
         return jsonify({'message': 'No data provided for update'}), 400
-
     work_area.work_area_name = data.get('work_area_name', work_area.work_area_name)
     work_area.reporting_week_start_offset_days = data.get('reporting_week_start_offset_days', work_area.reporting_week_start_offset_days)
     work_area.contributing_duration_days = data.get('contributing_duration_days', work_area.contributing_duration_days)
-
     db.session.commit()
     return jsonify(work_area.to_dict())
 
@@ -503,13 +577,10 @@ def update_work_area(id):
 @api_login_required
 def delete_work_area(id):
     work_area = WorkArea.query.get_or_404(id)
-
     if Employee.query.filter_by(primary_work_area_id=id).count() > 0:
         return jsonify({'message': 'Cannot delete work area with associated employees. Reassign employees first.'}), 409
-
     if DailyEmployeeHours.query.filter_by(work_area_id=id).count() > 0:
         return jsonify({'message': 'Cannot delete work area with associated daily hours entries. Delete related daily hours first.'}), 409
-
     db.session.delete(work_area)
     db.session.commit()
     return jsonify({'message': 'Work Area deleted successfully'}), 204
@@ -517,26 +588,22 @@ def delete_work_area(id):
 @app.route('/api/work-areas/reorder', methods=['PUT'])
 @api_login_required
 def reorder_work_areas():
-    data = request.get_json() # Expected: [{"work_area_id": 1, "order": 0}, {"work_area_id": 2, "order": 1}, ...]
+    data = request.get_json()
     if not isinstance(data, list):
         return jsonify({'message': 'Expected a list of work area order objects'}), 400
-
     try:
         for item in data:
             wa_id = item.get('work_area_id')
             new_order = item.get('order')
             if wa_id is None or new_order is None:
                 return jsonify({'message': 'Missing work_area_id or order in one or more items'}), 400
-            
             work_area = WorkArea.query.get(wa_id)
             if work_area:
                 work_area.display_order = new_order
             else:
                 print(f"Warning: Work Area with ID {wa_id} not found for reordering. Skipping.")
-        
         db.session.commit()
         return jsonify({'message': 'Work Area order updated successfully'}), 200
-
     except Exception as e:
         db.session.rollback()
         print(f"Error reordering work areas: {e}")
@@ -545,7 +612,6 @@ def reorder_work_areas():
 @app.route('/api/positions', methods=['GET'])
 @api_login_required
 def get_positions():
-    """Returns a list of all available positions."""
     positions = Position.query.order_by(Position.display_order, Position.position_id).all()
     return jsonify([p.to_dict() for p in positions])
 
@@ -553,22 +619,19 @@ def get_positions():
 @app.route('/api/employees', methods=['GET'])
 @api_login_required
 def get_employees():
-    # Order by display_order, then by employee_id as a fallback
     employees = Employee.query.order_by(Employee.display_order, Employee.employee_id).all()
     return jsonify([emp.to_dict() for emp in employees])
 
 @app.route('/api/positions', methods=['POST'])
 @api_login_required
 def create_position():
-    """Creates a new position."""
     data = request.get_json()
     if not data or not 'title' in data or not 'default_hours' in data:
         return jsonify({'message': 'Missing title or default_hours'}), 400
-
     try:
         new_position = Position(
             title=data['title'],
-            default_hours=float(data['default_hours']) # Ensure it's a float/decimal
+            default_hours=float(data['default_hours'])
         )
         db.session.add(new_position)
         db.session.commit()
@@ -581,17 +644,14 @@ def create_position():
 @app.route('/api/positions/<int:id>', methods=['PUT'])
 @api_login_required
 def update_position(id):
-    """Updates an existing position."""
     position = Position.query.get_or_404(id)
     data = request.get_json()
     if not data:
         return jsonify({'message': 'No data provided for update'}), 400
-
     if 'title' in data:
         position.title = data['title']
     if 'default_hours' in data:
         position.default_hours = float(data['default_hours'])
-
     try:
         db.session.commit()
         return jsonify(position.to_dict())
@@ -603,13 +663,9 @@ def update_position(id):
 @app.route('/api/positions/<int:id>', methods=['DELETE'])
 @api_login_required
 def delete_position(id):
-    """Deletes a position."""
     position = Position.query.get_or_404(id)
-
-    # Check for associated employees before deleting position
     if Employee.query.filter_by(position_id=id).count() > 0:
         return jsonify({'message': 'Cannot delete position with associated employees. Reassign employees first.'}), 409
-
     try:
         db.session.delete(position)
         db.session.commit()
@@ -622,26 +678,22 @@ def delete_position(id):
 @app.route('/api/positions/reorder', methods=['PUT'])
 @api_login_required
 def reorder_positions():
-    data = request.get_json() # Expected: [{"position_id": 1, "order": 0}, {"position_id": 2, "order": 1}, ...]
+    data = request.get_json()
     if not isinstance(data, list):
         return jsonify({'message': 'Expected a list of position order objects'}), 400
-
     try:
         for item in data:
             pos_id = item.get('position_id')
             new_order = item.get('order')
             if pos_id is None or new_order is None:
                 return jsonify({'message': 'Missing position_id or order in one or more items'}), 400
-            
             position = Position.query.get(pos_id)
             if position:
                 position.display_order = new_order
             else:
                 print(f"Warning: Position with ID {pos_id} not found for reordering. Skipping.")
-        
         db.session.commit()
         return jsonify({'message': 'Position order updated successfully'}), 200
-
     except Exception as e:
         db.session.rollback()
         print(f"Error reordering positions: {e}")
@@ -654,18 +706,13 @@ def create_employee():
     required_fields = ['first_name', 'last_initial', 'position_id', 'primary_work_area_id', 'employment_start_date']
     if not all(field in data for field in required_fields):
         return jsonify({'message': 'Missing required data'}), 400
-
     try:
-        # Convert date strings to date objects
         employment_start_date = date.fromisoformat(data['employment_start_date'])
-        # employment_end_date can be empty string from frontend, convert to None
         employment_end_date = date.fromisoformat(data['employment_end_date']) if data.get('employment_end_date') else None
     except ValueError:
         return jsonify({'message': 'Invalid date format for employment dates. Use THAT-MM-DD.'}), 400
-
     if not WorkArea.query.get(data['primary_work_area_id']):
         return jsonify({'message': 'Primary Work Area not found'}), 400
-
     new_employee = Employee(
         first_name=data['first_name'],
         last_initial=data['last_initial'],
@@ -674,7 +721,6 @@ def create_employee():
         employment_start_date=employment_start_date,
         employment_end_date=employment_end_date
     )
-    
     try:
         db.session.add(new_employee)
         db.session.commit()
@@ -689,27 +735,22 @@ def create_employee():
 def update_employee(id):
     employee = Employee.query.get_or_404(id)
     data = request.get_json()
-
     employee.first_name = data.get('first_name', employee.first_name)
     employee.last_initial = data.get('last_initial', employee.last_initial)
     employee.position_id = data['position_id']
     employee.primary_work_area_id = data.get('primary_work_area_id', employee.primary_work_area_id)
-
     if 'employment_start_date' in data:
         try:
             employee.employment_start_date = date.fromisoformat(data['employment_start_date'])
         except ValueError:
             return jsonify({'message': 'Invalid employment_start_date format. Use THAT-MM-DD.'}), 400
-    
     if 'employment_end_date' in data:
         try:
             employee.employment_end_date = date.fromisoformat(data['employment_end_date']) if data['employment_end_date'] else None
         except ValueError:
             return jsonify({'message': 'Invalid employment_end_date format. Use THAT-MM-DD or leave empty.'}), 400
-
     if not WorkArea.query.get(employee.primary_work_area_id):
         return jsonify({'message': 'Primary Work Area not found after update'}), 400
-
     try:
         db.session.commit()
         return jsonify(employee.to_dict())
@@ -722,10 +763,8 @@ def update_employee(id):
 @api_login_required
 def delete_employee(id):
     employee = Employee.query.get_or_404(id)
-
     if DailyEmployeeHours.query.filter_by(employee_id=id).count() > 0:
         return jsonify({'message': 'Cannot delete employee with recorded hours. Delete associated daily hours entries first.'}), 409
-
     db.session.delete(employee)
     db.session.commit()
     return jsonify({'message': 'Employee deleted successfully'}), 204
@@ -733,31 +772,26 @@ def delete_employee(id):
 @app.route('/api/employees/reorder', methods=['PUT'])
 @api_login_required
 def reorder_employees():
-    data = request.get_json() # Expected: [{"employee_id": 1, "order": 0}, {"employee_id": 2, "order": 1}, ...]
+    data = request.get_json()
     if not isinstance(data, list):
         return jsonify({'message': 'Expected a list of employee order objects'}), 400
-
     try:
         for item in data:
             emp_id = item.get('employee_id')
             new_order = item.get('order')
             if emp_id is None or new_order is None:
                 return jsonify({'message': 'Missing employee_id or order in one or more items'}), 400
-            
             employee = Employee.query.get(emp_id)
             if employee:
                 employee.display_order = new_order
             else:
                 print(f"Warning: Employee with ID {emp_id} not found for reordering. Skipping.")
-        
         db.session.commit()
         return jsonify({'message': 'Employee order updated successfully'}), 200
-
     except Exception as e:
         db.session.rollback()
         print(f"Error reordering employees: {e}")
         return jsonify({'message': 'An error occurred during reordering.', 'details': str(e)}), 500
-
 
 # Overall Production Weeks API
 @app.route('/api/overall-production-weeks', methods=['GET'])
@@ -1008,7 +1042,6 @@ def get_daily_hours_for_week():
         'current_overall_production_week_id': current_overall_production_week_id,
         'message_if_no_week': None
     })
-
 
 @app.route('/api/daily-hours-entry/batch-update', methods=['POST'])
 @api_login_required
@@ -1521,7 +1554,6 @@ def get_monthly_company_actuals_report():
     except Exception as e:
         print(f"Error generating monthly company actuals report: {e}")
         return jsonify({'message': 'An error occurred while generating the company actuals report.', 'details': str(e)}), 500
-    
 @app.route('/api/reports/email-monthly-report', methods=['POST'])
 @api_login_required
 def email_chart_report():
@@ -1535,7 +1567,6 @@ def email_chart_report():
     work_area_summary_html = data.get('work_area_summary_html', '') # HTML string of the work area table
     employee_summary_html = data.get('employee_summary_html', '') # HTML string of the employee table
     # --- END NEW ---
-
     # Add checks for missing data
     if not recipient:
         return jsonify({'message': 'Your account does not have an email address.'}), 400
@@ -1617,6 +1648,71 @@ def email_chart_report():
     except Exception as e:
         print(f"Error sending email: {e}")
         return jsonify({'message': f'Failed to send email: {str(e)}', 'details': str(e)}), 500
+
+# --- NEW API ENDPOINTS FOR SHIFT SUMMARIES ---
+@app.route('/api/jobs', methods=['GET', 'POST'])
+@api_login_required
+def handle_jobs():
+    if request.method == 'POST':
+        data = request.get_json()
+        new_job = Job(**data)
+        db.session.add(new_job)
+        db.session.commit()
+        return jsonify({'message': 'Job created successfully'}), 201
+    else:
+        jobs = Job.query.all()
+        return jsonify([job.to_dict() for job in jobs])
+
+@app.route('/api/jobs/<int:job_id>', methods=['GET', 'PUT', 'DELETE'])
+@api_login_required
+def handle_job(job_id):
+    job = Job.query.get_or_404(job_id)
+    if request.method == 'GET':
+        return jsonify(job.to_dict())
+    elif request.method == 'PUT':
+        data = request.get_json()
+        for key, value in data.items():
+            setattr(job, key, value)
+        db.session.commit()
+        return jsonify({'message': 'Job updated successfully'})
+    elif request.method == 'DELETE':
+        db.session.delete(job)
+        db.session.commit()
+        return jsonify({'message': 'Job deleted successfully'})
+
+@app.route('/api/daily_shift_summary', methods=['POST'])
+@api_login_required
+def add_daily_shift_summary():
+    data = request.get_json()
+    new_summary = DailyShiftSummary(**data)
+    db.session.add(new_summary)
+    db.session.commit()
+    return jsonify({'message': 'Daily shift summary added successfully'}), 201
+
+@app.route('/api/finishing_work', methods=['GET', 'POST'])
+@api_login_required
+def handle_finishing_work():
+    if request.method == 'POST':
+        data = request.get_json()
+        new_work = FinishingWork(**data)
+        db.session.add(new_work)
+        db.session.commit()
+        return jsonify({'message': 'Finishing work created successfully'}), 201
+    else:
+        work_items = FinishingWork.query.all()
+        return jsonify([item.to_dict() for item in work_items])
+
+@app.route('/api/finishing_work/<int:finishing_id>', methods=['PUT'])
+@api_login_required
+def update_finishing_work(finishing_id):
+    work_item = FinishingWork.query.get_or_404(finishing_id)
+    data = request.get_json()
+    work_item.stage = data.get('stage', work_item.stage)
+    work_item.stage_completed_date = data.get('stage_completed_date', work_item.stage_completed_date)
+    work_item.employee_id = data.get('employee_id', work_item.employee_id)
+    db.session.commit()
+    return jsonify({'message': 'Finishing work updated successfully'})
+# --- END NEW API ENDPOINTS ---
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():

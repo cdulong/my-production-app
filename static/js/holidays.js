@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 holidays.forEach(holiday => {
                     const li = document.createElement('li');
                 li.innerHTML = `
-                    <span><strong>${holiday.description}</strong> - ${holiday.holiday_date}</span>
+                    <span>${holiday.holiday_date} - <strong>${holiday.description}</strong></span>
                     <button class="btn-sm delete-btn" data-id="${holiday.id}">Delete</button>
                 `;
                     holidayList.appendChild(li);
